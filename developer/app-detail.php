@@ -27,6 +27,29 @@ $appScopes = array_column($st->fetchAll(), 'scope');
 $msg = '';
 $err = '';
 
+// 重置 client_secret（POST 后生成并仅展示一次）
+if (($_POST['action'] ?? '') === 'reset_secret') {
+    $newSecret = genSecret();
+    $db->prepare('UPDATE apps SET client_secret_hash = ?, updated_at = NOW() WHERE id = ?')
+        ->execute([hashSecret($newSecret), $app['id']]);
+    // 存 session 一次性展示，避免刷新重复显示
+    session_start();
+    $_SESSION['regen_secret_' . $app['client_id']] = $newSecret;
+    session_write_close();
+    header('Location: app-detail.php?id=' . urlencode($app['client_id']));
+    exit;
+}
+
+// 展示上一次重置生成的 client_secret（一次性）
+$regenedSecret = null;
+session_start();
+$flashKey = 'regen_secret_' . $app['client_id'];
+if (isset($_SESSION[$flashKey])) {
+    $regenedSecret = $_SESSION[$flashKey];
+    unset($_SESSION[$flashKey]);
+}
+session_write_close();
+
 // 保存修改
 if (($_POST['action'] ?? '') === 'save') {
     $name = trim($_POST['name'] ?? '');
@@ -98,7 +121,19 @@ devSidebar('devapps');
     </mdui-card>
     <div id="icon-status" style="font-size:12px;opacity:.7;margin-top:6px;"></div>
 
-    <!-- 基本设置 -->
+    <?php if ($regenedSecret): ?>
+    <!-- 重置后的 client_secret（一次性展示） -->
+    <mdui-card class="form-card" variant="elevated" style="border:1px solid rgba(var(--mdui-color-primary),.5);">
+      <div class="sec-title" style="margin:0 0 12px; color:rgb(var(--mdui-color-primary));">已重置 client_secret</div>
+      <div style="font-size:13px; opacity:.7; margin-bottom:10px;">旧密钥已失效。请立即复制保存，此密钥<b>仅本次显示</b>，刷新后不再出现。</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <mdui-text-field readonly id="regen-secret" value="<?= htmlspecialchars($regenedSecret) ?>" full-width style="font-family:ui-monospace,monospace;"></mdui-text-field>
+        <mdui-button variant="filled" icon="content_copy--outlined" onclick="navigator.clipboard.writeText(document.getElementById('regen-secret').value);mdui.snackbar('已复制');">复制</mdui-button>
+      </div>
+    </mdui-card>
+    <?php endif; ?>
+
+    <!-- 基本设置 + 权限范围（共用一个保存表单） -->
     <form method="POST">
       <input type="hidden" name="action" value="save">
       <mdui-card class="form-card" variant="elevated">
@@ -120,13 +155,8 @@ devSidebar('devapps');
           <div class="m">创建时间<b><?= $app['created_at'] ?></b></div>
           <div class="m">最近更新<b><?= $app['updated_at'] ?></b></div>
         </div>
-        <div class="actions">
-          <mdui-button variant="text" onclick="location.href='apps.php'">取 消</mdui-button>
-          <mdui-button variant="filled" icon="check--outlined" type="submit">保存修改</mdui-button>
-        </div>
       </mdui-card>
 
-      <!-- 权限范围 -->
       <mdui-card class="form-card" variant="elevated">
         <div class="sec-title" style="margin:0 0 12px;">权限范围</div>
         <?php foreach ($scopeDefs as $key => [$t, $d]): ?>
@@ -138,6 +168,27 @@ devSidebar('devapps');
           </div>
         </label>
         <?php endforeach; ?>
+      </mdui-card>
+
+      <div class="actions">
+        <mdui-button variant="text" onclick="location.href='apps.php'">取 消</mdui-button>
+        <mdui-button variant="filled" icon="check--outlined" type="submit">保存修改</mdui-button>
+      </div>
+    </form>
+
+    <!-- 客户端凭据（独立表单，重置密钥） -->
+    <form method="POST" onsubmit="return confirm('确定重置 client_secret 吗？旧密钥将立即失效！');">
+      <input type="hidden" name="action" value="reset_secret">
+      <mdui-card class="form-card" variant="elevated">
+        <div class="sec-title" style="margin:0 0 12px;">客户端凭据 (Client Credentials)</div>
+        <div class="form-field">
+          <mdui-text-field readonly label="client_id" icon="fingerprint--outlined" value="<?= htmlspecialchars($app['client_id']) ?>" full-width></mdui-text-field>
+        </div>
+        <div class="form-field">
+          <mdui-text-field readonly label="client_secret" icon="key--outlined" placeholder="为安全起见，密钥仅创建或重置时显示" full-width></mdui-text-field>
+        </div>
+        <div style="font-size:12px; opacity:.6; margin-bottom:14px;">重置后旧 client_secret 立即失效，所有使用旧密钥的应用需更新为新密钥。</div>
+        <mdui-button variant="tonal" color="error" icon="refresh--outlined" type="submit">重置 client_secret</mdui-button>
       </mdui-card>
     </form>
 
