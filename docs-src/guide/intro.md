@@ -1,6 +1,6 @@
 # 简介
 
-**Auth Center** 是运行在 `auth.sanhe.com.mp` 的统一身份认证系统（聚合登录），提供 OAuth 2.0 授权能力，让多个应用共用一个账号体系。
+**Auth Center** 是运行在 `<AUTH_SERVER>` 的统一身份认证系统（聚合登录），提供 OAuth 2.0 授权能力，让多个应用共用一个账号体系。
 
 ## 你能用它做什么
 
@@ -19,7 +19,7 @@ Auth Center 使用标准 OAuth 2.0 授权码模式，任何语言都能对接：
 
 ## 快速上手
 
-1. 在[控制台](https://auth.sanhe.com.mp/user/app-create.php)注册应用，拿到 `client_id` 和 `client_secret`
+1. 在[控制台](https://<AUTH_SERVER>/user/app-create.php)注册应用，拿到 `client_id` 和 `client_secret`
 2. 跳转授权页 → 用户同意 → 回调拿 `code`
 3. 用 `code` 换 `access_token` → 调 `/api/info` 拿用户信息
 
@@ -35,8 +35,8 @@ Auth Center 使用标准 OAuth 2.0 授权码模式，任何语言都能对接：
 
 | 项目 | 值 |
 |------|------|
-| API 基础地址 | `https://auth.sanhe.com.mp/api` |
-| 授权页 | `https://auth.sanhe.com.mp/api/oauth/authorize` |
-| 令牌接口 | `https://auth.sanhe.com.mp/api/oauth/token` |
-| 用户信息 | `https://auth.sanhe.com.mp/api/info` |
-| 文档 | `https://auth.sanhe.com.mp/docs/` |
+| API 基础地址 | `https://<AUTH_SERVER>/api` |
+| 授权页 | `https://<AUTH_SERVER>/api/oauth/authorize` |
+| 令牌接口 | `https://<AUTH_SERVER>/api/oauth/token` |
+| 用户信息 | `https://<AUTH_SERVER>/api/info` |
+| 文档 | `https://<AUTH_SERVER>/docs/` |

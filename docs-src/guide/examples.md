@@ -26,7 +26,7 @@ $params = http_build_query([
     'scope'         => 'basic,voice',
     'state'         => $state,
 ]);
-header('Location: https://auth.sanhe.com.mp/api/oauth/authorize?' . $params);
+header('Location: https://<AUTH_SERVER>/api/oauth/authorize?' . $params);
 ```
 
 **2. 回调处理：** 用 code 换令牌 + 拿用户信息
@@ -49,7 +49,7 @@ $clientSecret = '你的client_secret';
 $redirectUri = 'https://yourapp.com/callback';
 
 // 换令牌
-$ch = curl_init('https://auth.sanhe.com.mp/api/oauth/token');
+$ch = curl_init('https://<AUTH_SERVER>/api/oauth/token');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
@@ -73,7 +73,7 @@ $accessToken = $resp['data']['access_token'];
 $refreshToken = $resp['data']['refresh_token'];
 
 // 拿用户信息
-$ch = curl_init('https://auth.sanhe.com.mp/api/info');
+$ch = curl_init('https://<AUTH_SERVER>/api/info');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER     => ["Authorization: Bearer $accessToken"],
@@ -88,7 +88,7 @@ echo "欢迎，{$user['nickname']}！";
 
 ```php
 <?php
-$ch = curl_init('https://auth.sanhe.com.mp/api/oauth/token');
+$ch = curl_init('https://<AUTH_SERVER>/api/oauth/token');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
@@ -121,7 +121,7 @@ $newAccessToken = $resp['data']['access_token']; // 刷新后 access_token 会�
 
 ```bash
 # 1. 换令牌
-curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
+curl -X POST https://<AUTH_SERVER>/api/oauth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "authorization_code",
@@ -132,11 +132,11 @@ curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
   }'
 
 # 2. 拿用户信息
-curl https://auth.sanhe.com.mp/api/info \
+curl https://<AUTH_SERVER>/api/info \
   -H "Authorization: Bearer 上一步的access_token"
 
 # 3. 刷新令牌
-curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
+curl -X POST https://<AUTH_SERVER>/api/oauth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "refresh_token",
@@ -151,7 +151,7 @@ curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
 ```python
 import requests
 
-BASE = 'https://auth.sanhe.com.mp'
+BASE = 'https://<AUTH_SERVER>'
 
 # 换令牌
 resp = requests.post(f'{BASE}/api/oauth/token', json={

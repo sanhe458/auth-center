@@ -30,7 +30,7 @@ export default defineConfig({
     nav: [
       { text: '对接指南', link: '/guide/quickstart' },
       { text: 'API 参考', link: '/api/overview' },
-      { text: '控制台', link: 'https://auth.sanhe.com.mp/' },
+      { text: '控制台', link: 'https://<AUTH_SERVER>/' },
     ],
     sidebar: {
       '/guide/': [

@@ -2,13 +2,13 @@
 
 本文面向**想接入 Auth Center 登录的开发者**。你的应用可以是网站、模组、机器人或任何能发 HTTP 请求的程序。
 
-> 对接环境：`https://auth.sanhe.com.mp`
+> 对接环境：`https://<AUTH_SERVER>`
 
 ---
 
 ## 第 1 步：注册应用
 
-在[控制台](https://auth.sanhe.com.mp/user/app-create.php)创建应用，填写：
+在[控制台](https://<AUTH_SERVER>/user/app-create.php)创建应用，填写：
 
 | 字段 | 必填 | 说明 |
 |------|:---:|------|
@@ -33,7 +33,7 @@ client_secret 只显示一次，关闭页面后无法再次查看。泄露后请
 把用户引导到授权页（浏览器跳转，或模组/机器人打开链接）：
 
 ```
-GET https://auth.sanhe.com.mp/api/oauth/authorize
+GET https://<AUTH_SERVER>/api/oauth/authorize
     ?response_type=code
     &client_id={你的client_id}
     &redirect_uri={你的回调地址}
@@ -65,7 +65,7 @@ https://yourapp.com/callback?code=xxxxxxxx&state=你的state
 在**你的后端**用授权码换 access_token：
 
 ```bash
-curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
+curl -X POST https://<AUTH_SERVER>/api/oauth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "authorization_code",
@@ -101,7 +101,7 @@ curl -X POST https://auth.sanhe.com.mp/api/oauth/token \
 ## 第 4 步：获取用户信息
 
 ```bash
-curl https://auth.sanhe.com.mp/api/info \
+curl https://<AUTH_SERVER>/api/info \
   -H "Authorization: Bearer {access_token}"
 ```
 
