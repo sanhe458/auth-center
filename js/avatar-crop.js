@@ -81,55 +81,72 @@ window.AvatarCrop = (function () {
   function onPointerDown(e) {
     e.preventDefault();
     const isTouch = e.type === 'touchstart';
-    // 双指：进入捏合模式
-    if (isTouch && e.touches.length >= 2) {
-      const t1 = e.touches[0], t2 = e.touches[1];
-      const startDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const startScale = scale;
-      function pinchMove(ev) {
+    if (!isTouch) {
+      // 鼠标拖拽
+      const startX = e.clientX, startY = e.clientY;
+      const sx = ox, sy = oy;
+      imgEl.style.cursor = 'grabbing';
+      function move(ev) {
+        ox = sx + (ev.clientX - startX);
+        oy = sy + (ev.clientY - startY);
+        applyTransform();
         ev.preventDefault();
-        if (ev.touches.length < 2) return;
-        const a = ev.touches[0], b = ev.touches[1];
-        const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
-        if (startDist > 0) {
-          const ratio = dist / startDist;
-          scale = Math.min(5, Math.max(1, startScale * ratio));
-          applyTransform();
-        }
       }
-      function pinchEnd() {
-        document.removeEventListener('touchmove', pinchMove);
-        document.removeEventListener('touchend', pinchEnd);
-        document.removeEventListener('touchcancel', pinchEnd);
+      function up() {
+        imgEl.style.cursor = 'grab';
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
       }
-      document.addEventListener('touchmove', pinchMove, { passive: false });
-      document.addEventListener('touchend', pinchEnd);
-      document.addEventListener('touchcancel', pinchEnd);
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
       return;
     }
-    const startX = isTouch ? e.touches[0].clientX : e.clientX;
-    const startY = isTouch ? e.touches[0].clientY : e.clientY;
-    const sx = ox, sy = oy;
-    imgEl.style.cursor = 'grabbing';
+
+    // 触屏：统一手势状态
+    let dragState = null;   // {sx, sy, startX, startY} 单指拖拽
+    let pinchState = null;  // {startDist, startScale} 双指捏合
+
     function move(ev) {
-      const mx = isTouch ? ev.touches[0].clientX : ev.clientX;
-      const my = isTouch ? ev.touches[0].clientY : ev.clientY;
-      ox = sx + (mx - startX);
-      oy = sy + (my - startY);
-      applyTransform();
       ev.preventDefault();
+      const len = ev.touches.length;
+      if (len >= 2) {
+        // 双指捏合
+        const a = ev.touches[0], b = ev.touches[1];
+        const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+        if (!pinchState) {
+          pinchState = { startDist: dist, startScale: scale };
+          dragState = null;
+          return;
+        }
+        scale = Math.min(5, Math.max(1, pinchState.startScale * (dist / pinchState.startDist)));
+        applyTransform();
+        dragState = null;
+      } else if (len === 1) {
+        // 单指拖拽
+        const t = ev.touches[0];
+        if (!dragState) {
+          dragState = { sx: ox, sy: oy, startX: t.clientX, startY: t.clientY };
+          pinchState = null;
+          return;
+        }
+        ox = dragState.sx + (t.clientX - dragState.startX);
+        oy = dragState.sy + (t.clientY - dragState.startY);
+        applyTransform();
+      }
     }
+
     function up() {
       imgEl.style.cursor = 'grab';
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
+      dragState = null;
+      pinchState = null;
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', up);
+      document.removeEventListener('touchcancel', up);
     }
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
+
     document.addEventListener('touchmove', move, { passive: false });
     document.addEventListener('touchend', up);
+    document.addEventListener('touchcancel', up);
   }
 
   function onWheel(e) {
