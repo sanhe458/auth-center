@@ -23,7 +23,7 @@ $gradients = [
 ];
 $icons = ['movie--outlined', 'record_voice_over--outlined', 'smart_toy--outlined', 'tv--outlined', 'extension--outlined', 'cloud--outlined'];
 
-pageHead('我的应用', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('我的应用', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devapps');

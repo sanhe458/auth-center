@@ -21,7 +21,7 @@ $st = $db->prepare('SELECT z.id, z.app_id, z.scopes, z.updated_at, z.status,
 $st->execute([$user['id']]);
 $auths = $st->fetchAll();
 
-pageHead('收到的授权', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('收到的授权', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devauths');

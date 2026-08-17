@@ -27,7 +27,7 @@ $st = $db->prepare('SELECT k.*, a.name AS app_name, a.client_id FROM api_keys k
 $st->execute([$user['id']]);
 $keys = $st->fetchAll();
 
-pageHead('API 密钥', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('API 密钥', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devkeys');

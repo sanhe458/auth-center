@@ -72,7 +72,7 @@ if (($_POST['action'] ?? '') === 'delete') {
 
 $scopeDefs = scopeDefs();
 
-pageHead($app['name'], '<link rel="stylesheet" href="/css/user.css">');
+pageHead($app['name'], '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devapps');

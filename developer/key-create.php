@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-pageHead('生成密钥', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('生成密钥', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devkeys');

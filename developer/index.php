@@ -41,7 +41,7 @@ foreach ($st->fetchAll() as $r) {
 usort($activities, fn($a, $b) => strcmp($b['time'], $a['time']));
 $activities = array_slice($activities, 0, 6);
 
-pageHead('开发总览', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('开发总览', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devindex');

@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $scopeDefs = scopeDefs();
 
-pageHead('创建应用', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('创建应用', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 devSidebar('devapps');
