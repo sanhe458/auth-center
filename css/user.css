@@ -56,6 +56,23 @@ html, body { overflow-x: hidden; }
 /* 通用面板 */
 .panel { padding: 8px 16px 24px; }
 
+/* 授权管理：应用卡片（自绘 flex，移动端自动换行） */
+.auth-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 14px; margin-bottom: 10px;
+  border: 1px solid rgba(128,128,128,.14);
+}
+.auth-card .auth-main { flex: 1; min-width: 0; }
+.auth-card .auth-title { font-size: 15px; font-weight: 600; }
+.auth-card .auth-desc { font-size: 12px; opacity: .6; margin-top: 4px; line-height: 1.5; }
+.auth-card .auth-actions {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+  .auth-card { flex-wrap: wrap; }
+  .auth-card .auth-actions { width: 100%; justify-content: flex-end; padding-top: 6px; border-top: 1px solid rgba(128,128,128,.1); }
+}
+
 /* 移动端：侧边栏变顶部横排 */
 @media (max-width: 640px) {
   .shell { flex-direction: column; }

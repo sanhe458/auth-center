@@ -49,36 +49,36 @@ pageSidebar('auth');
 contentOpen('授权管理', '查看和管理你与应用之间的授权关系');
 ?>
     <div class="sec-title" style="margin:0 0 12px;">我授权的应用</div>
-    <mdui-list>
       <?php if (!$myAuths): ?>
       <mdui-card variant="elevated" style="border-radius:16px; padding:40px; text-align:center;">
         <mdui-icon name="verified_user--outlined" style="font-size:44px; opacity:.3;"></mdui-icon>
         <div style="margin-top:12px; opacity:.7;">还没有授权过任何应用</div>
       </mdui-card>
       <?php else: foreach ($myAuths as $z): $active = (int)$z['status'] === 1; ?>
-      <mdui-list-item nonclickable>
-        <mdui-avatar slot="icon" style="--mdui-avatar-size:42px; border-radius:14px; background:rgb(var(--mdui-color-surface-container-high));">
+      <div class="auth-card" style="background:rgb(var(--mdui-color-surface-container));">
+        <mdui-avatar style="--mdui-avatar-size:42px; border-radius:14px; background:rgb(var(--mdui-color-surface-container-high));">
           <mdui-icon name="<?= $active ? 'verified_user--outlined' : 'history--outlined' ?>" style="font-size:20px;"></mdui-icon>
         </mdui-avatar>
-        <?= htmlspecialchars($z['app_name']) ?>
-        <span slot="description">
-          授权于 <?= substr($z['updated_at'], 0, 10) ?> ·
-          <?php foreach (explode(',', $z['scopes']) as $s): ?><span style="margin-right:4px;"><?= $scopeLabels[$s] ?? $s ?></span><?php endforeach; ?>
-        </span>
-        <?php if ($active): ?>
-        <mdui-button slot="end-icon" variant="text" icon="edit--outlined" onclick="location.href='auth-edit.php?id=<?= (int)$z['id'] ?>'">权限</mdui-button>
-        <form slot="end-icon" method="POST" style="display:inline;" onsubmit="return confirm('确定撤回对「<?= htmlspecialchars($z['app_name']) ?>」的授权吗？');">
-          <input type="hidden" name="action" value="revoke">
-          <input type="hidden" name="authorization_id" value="<?= (int)$z['id'] ?>">
-          <mdui-button variant="text" color="error" icon="link_off--outlined" type="submit">撤回</mdui-button>
-        </form>
-        <mdui-badge slot="end-icon" color="tertiary">已授权</mdui-badge>
-        <?php else: ?>
-        <mdui-badge slot="end-icon">已撤回</mdui-badge>
-        <?php endif; ?>
-      </mdui-list-item>
+        <div class="auth-main">
+          <div class="auth-title"><?= htmlspecialchars($z['app_name']) ?></div>
+          <div class="auth-desc">授权于 <?= substr($z['updated_at'], 0, 10) ?></div>
+        </div>
+        <div class="auth-actions">
+          <?php if ($active): ?>
+          <?php $sz = implode('、', array_filter(array_map(fn($s2) => $scopeLabels[$s2] ?? $s2, explode(',', $z['scopes'])))); ?>
+          <mdui-badge color="tertiary">已授权<?= $sz ? ' · ' . htmlspecialchars($sz) : '' ?></mdui-badge>
+          <mdui-button variant="text" icon="edit--outlined" onclick="location.href='auth-edit.php?id=<?= (int)$z['id'] ?>'">权限</mdui-button>
+          <form method="POST" style="display:inline;" onsubmit="return confirm('确定撤回对「<?= htmlspecialchars($z['app_name']) ?>」的授权吗？');">
+            <input type="hidden" name="action" value="revoke">
+            <input type="hidden" name="authorization_id" value="<?= (int)$z['id'] ?>">
+            <mdui-button variant="text" color="error" icon="link_off--outlined" type="submit">撤回</mdui-button>
+          </form>
+          <?php else: ?>
+          <mdui-badge>已撤回</mdui-badge>
+          <?php endif; ?>
+        </div>
+      </div>
       <?php endforeach; endif; ?>
-    </mdui-list>
 
     <?php if ($receivedAuths): ?>
     <div class="sec-title" style="margin:26px 0 12px;">我的应用收到的授权</div>
