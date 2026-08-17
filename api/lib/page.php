@@ -167,6 +167,7 @@ function devSidebar(string $active): void
     $items = [
         'devindex' => ['开发总览', 'dashboard--outlined', 'index.php'],
         'devapps'  => ['我的应用', 'apps--outlined', 'apps.php'],
+        'devauths' => ['收到的授权', 'verified_user--outlined', 'auths.php'],
         'devkeys'  => ['API 密钥', 'key--outlined', 'keys.php'],
     ];
     echo '<div class="sidebar">';

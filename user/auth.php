@@ -32,14 +32,6 @@ $st = $db->prepare('SELECT z.*, a.name AS app_name, a.client_id, a.description F
 $st->execute([$user['id']]);
 $myAuths = $st->fetchAll();
 
-// 我的应用被授权情况（作为应用所有者的授权）
-$st = $db->prepare('SELECT z.*, a.name AS app_name, a.client_id, u.nickname, u.uid FROM authorizations z
-                    JOIN apps a ON a.id = z.app_id
-                    JOIN users u ON u.id = z.user_id
-                    WHERE a.owner_id = ? AND z.status = 1 ORDER BY z.updated_at DESC LIMIT 20');
-$st->execute([$user['id']]);
-$receivedAuths = $st->fetchAll();
-
 $scopeLabels = scopeLabels();
 
 pageHead('授权管理', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
@@ -79,25 +71,6 @@ contentOpen('授权管理', '查看和管理你与应用之间的授权关系');
         </div>
       </div>
       <?php endforeach; endif; ?>
-
-    <?php if ($receivedAuths): ?>
-    <div class="sec-title" style="margin:26px 0 12px;">我的应用收到的授权</div>
-    <mdui-list>
-      <?php foreach ($receivedAuths as $z): ?>
-      <mdui-list-item nonclickable>
-        <mdui-avatar slot="icon" style="--mdui-avatar-size:42px; border-radius:14px; background:rgb(var(--mdui-color-surface-container-high));">
-          <mdui-icon name="person--outlined" style="font-size:20px;"></mdui-icon>
-        </mdui-avatar>
-        <?= htmlspecialchars($z['app_name']) ?> · <?= htmlspecialchars($z['nickname']) ?>
-        <span slot="description">
-          授权于 <?= substr($z['updated_at'], 0, 10) ?> ·
-          <?php foreach (explode(',', $z['scopes']) as $s): ?><span style="margin-right:4px;"><?= $scopeLabels[$s] ?? $s ?></span><?php endforeach; ?>
-        </span>
-        <mdui-badge slot="end-icon" color="tertiary">已授权</mdui-badge>
-      </mdui-list-item>
-      <?php endforeach; ?>
-    </mdui-list>
-    <?php endif; ?>
 <?php
 contentClose();
 echo '</div>';
