@@ -59,7 +59,7 @@ html, body { overflow-x: hidden; }
 /* 授权管理：应用卡片（自绘 flex，移动端自动换行） */
 .auth-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 16px; border-radius: 14px; margin-bottom: 10px;
+  padding: 14px 16px; border-radius: 20px; margin-bottom: 10px;
   border: 1px solid rgba(128,128,128,.14);
 }
 .auth-card .auth-main { flex: 1; min-width: 0; }
