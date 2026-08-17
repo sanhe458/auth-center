@@ -53,8 +53,6 @@ export default defineConfig({
           items: [
             { text: '接口总览', link: '/api/overview' },
             { text: '认证接口', link: '/api/auth' },
-            { text: '用户资源接口', link: '/api/user' },
-            { text: '控制台管理接口', link: '/api/console' },
             { text: '通知接口', link: '/api/notify' },
             { text: '错误码', link: '/api/errors' },
           ],

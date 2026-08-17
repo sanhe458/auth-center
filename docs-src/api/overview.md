@@ -8,11 +8,10 @@ https://<AUTH_SERVER>/api
 
 ## 认证方式
 
-系统有两套认证体系，对应两类接口：
+第三方应用通过 **OAuth 授权码流程**对接，拿到 **Bearer Token** 后调用资源接口：
 
 | 认证方式 | 适用接口 | 说明 |
 |----------|----------|------|
-| **Session Cookie** | 控制台接口（`/apps` `/keys` `/authorizations`） | 用户在浏览器登录后的会话，用于管理自己的应用和密钥 |
 | **Bearer Token** | 资源接口（`/info`） | OAuth 授权后拿到的 access_token，供第三方应用调用 |
 
 ## 请求格式
@@ -46,7 +45,7 @@ https://<AUTH_SERVER>/api
 
 ## 接口列表
 
-### OAuth 认证（第三方应用对接）
+### OAuth 认证（对接入口）
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
@@ -55,33 +54,15 @@ https://<AUTH_SERVER>/api
 | `/api/oauth/token` | POST | 授权码/刷新令牌换 access_token |
 | `/api/oauth/revoke` | POST | 吊销令牌 |
 
-### 用户
+### 用户信息服务
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `/api/user/register` | POST | 注册 |
-| `/api/user/login` | POST | 登录 |
-| `/api/user/logout` | POST | 登出 |
-| `/api/user/me` | GET | 当前登录用户（Session） |
 | `/api/info` | GET | 用户信息（Bearer Token） |
-
-### 控制台管理（Session）
-
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/apps/list` | GET | 应用列表 |
-| `/api/apps/create` | POST | 创建应用 |
-| `/api/apps/update` | POST | 更新应用 |
-| `/api/apps/delete` | POST | 删除应用 |
-| `/api/keys/list` | GET | 密钥列表 |
-| `/api/keys/create` | POST | 生成密钥 |
-| `/api/keys/revoke` | POST | 吊销密钥 |
-| `/api/authorizations/list` | GET | 授权列表 |
-| `/api/authorizations/revoke` | POST | 撤回授权 |
 
 ### 通知（应用发邮件）
 
-应用给用户发邮件（需要 `notify` 权限，详见[通知接口](/api/notify)）。
+应用给该应用已授权的用户发邮件（需要 `notify` 权限，详见[通知接口](/api/notify)）。
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
@@ -101,8 +82,6 @@ https://<AUTH_SERVER>/api
 | 接口 | 限制 |
 |------|------|
 | `/api/oauth/token` | 每 IP 每分钟 30 次 |
-| `/api/user/login` | 每 IP 每分钟 20 次 |
-| `/api/user/register` | 每 IP 每小时 10 次 |
 | `/api/notify/send` | 每应用每分钟 10 次 |
 | `/api/notify/send_to_user` | 每应用每分钟 10 次 |
 
