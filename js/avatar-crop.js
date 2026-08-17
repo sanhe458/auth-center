@@ -42,9 +42,11 @@ window.AvatarCrop = (function () {
     wrapEl.style.cssText = 'position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#000;border-radius:12px;touch-action:none;cursor:grab;';
 
     imgEl = document.createElement('img');
-    imgEl.style.cssText = 'position:absolute;user-select:none;-webkit-user-drag:none;max-width:none;';
-    imgEl.addEventListener('mousedown', onPointerDown);
-    imgEl.addEventListener('touchstart', onPointerDown, { passive: false });
+    imgEl.style.cssText = 'position:absolute;user-select:none;-webkit-user-drag:none;max-width:none;touch-action:none;';
+    imgEl.addEventListener('pointerdown', onPointerDown);
+    imgEl.addEventListener('pointermove', onPointerMove);
+    imgEl.addEventListener('pointerup', onPointerUp);
+    imgEl.addEventListener('pointercancel', onPointerUp);
     imgEl.addEventListener('wheel', onWheel, { passive: false });
     wrapEl.appendChild(imgEl);
 
@@ -78,75 +80,59 @@ window.AvatarCrop = (function () {
     document.body.appendChild(container);
   }
 
+  // 多点触控：活动指针集合
+  let pointers = {};
+  let dragStart = null;   // 单指拖拽基准 {sx,sy,px,py}
+  let pinchStart = null;  // 双指缩放基准 {dist, scale}
+
   function onPointerDown(e) {
     e.preventDefault();
-    const isTouch = e.type === 'touchstart';
-    if (!isTouch) {
-      // 鼠标拖拽
-      const startX = e.clientX, startY = e.clientY;
-      const sx = ox, sy = oy;
-      imgEl.style.cursor = 'grabbing';
-      function move(ev) {
-        ox = sx + (ev.clientX - startX);
-        oy = sy + (ev.clientY - startY);
-        applyTransform();
-        ev.preventDefault();
-      }
-      function up() {
-        imgEl.style.cursor = 'grab';
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-      }
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
-      return;
-    }
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    imgEl.setPointerCapture && imgEl.setPointerCapture(e.pointerId);
+    imgEl.style.cursor = 'grabbing';
+  }
 
-    // 触屏：统一手势状态
-    let dragState = null;   // {sx, sy, startX, startY} 单指拖拽
-    let pinchState = null;  // {startDist, startScale} 双指捏合
-
-    function move(ev) {
-      ev.preventDefault();
-      const len = ev.touches.length;
-      if (len >= 2) {
-        // 双指捏合
-        const a = ev.touches[0], b = ev.touches[1];
-        const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
-        if (!pinchState) {
-          pinchState = { startDist: dist, startScale: scale };
-          dragState = null;
-          return;
+  function onPointerMove(e) {
+    e.preventDefault();
+    if (!(e.pointerId in pointers)) return;
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    const ids = Object.keys(pointers);
+    if (ids.length >= 2) {
+      // 双指捏合：用前两个指针的距离
+      const [a, b] = ids;
+      const p1 = pointers[a], p2 = pointers[b];
+      const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      if (!pinchStart) {
+        pinchStart = { dist, scale };
+        dragStart = null;
+      } else {
+        if (pinchStart.dist > 0) {
+          scale = Math.min(5, Math.max(1, pinchStart.scale * (dist / pinchStart.dist)));
+          applyTransform();
         }
-        scale = Math.min(5, Math.max(1, pinchState.startScale * (dist / pinchState.startDist)));
-        applyTransform();
-        dragState = null;
-      } else if (len === 1) {
-        // 单指拖拽
-        const t = ev.touches[0];
-        if (!dragState) {
-          dragState = { sx: ox, sy: oy, startX: t.clientX, startY: t.clientY };
-          pinchState = null;
-          return;
-        }
-        ox = dragState.sx + (t.clientX - dragState.startX);
-        oy = dragState.sy + (t.clientY - dragState.startY);
+      }
+    } else if (ids.length === 1) {
+      // 单指拖拽
+      const id = ids[0];
+      const p = pointers[id];
+      if (!dragStart) {
+        dragStart = { sx: ox, sy: oy, px: p.x, py: p.y };
+        pinchStart = null;
+      } else {
+        ox = dragStart.sx + (p.x - dragStart.px);
+        oy = dragStart.sy + (p.y - dragStart.py);
         applyTransform();
       }
     }
+  }
 
-    function up() {
-      imgEl.style.cursor = 'grab';
-      dragState = null;
-      pinchState = null;
-      document.removeEventListener('touchmove', move);
-      document.removeEventListener('touchend', up);
-      document.removeEventListener('touchcancel', up);
-    }
-
-    document.addEventListener('touchmove', move, { passive: false });
-    document.addEventListener('touchend', up);
-    document.addEventListener('touchcancel', up);
+  function onPointerUp(e) {
+    e.preventDefault();
+    delete pointers[e.pointerId];
+    const ids = Object.keys(pointers);
+    if (ids.length < 2) pinchStart = null;
+    if (ids.length < 1) dragStart = null;
+    if (ids.length === 0) imgEl.style.cursor = 'grab';
   }
 
   function onWheel(e) {
