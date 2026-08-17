@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+<meta name="renderer" content="webkit"/>
+<link rel="stylesheet" href="../lib/mdui.css">
+<script src="../lib/theme.js"></script>
+<link rel="stylesheet" href="../lib/material-icons.css">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/user.css">
+<title>应用详情 · Auth Center</title>
+<style>
+/* 应用详情页样式 */
+.form-card { padding: 24px; border-radius: 18px; max-width: 560px; margin-bottom: 16px; }
+.app-head { display: flex; align-items: center; gap: 16px; padding: 20px 24px; border-radius: 18px; max-width: 560px; margin-bottom: 16px; }
+.app-head .info { flex: 1; min-width: 0; }
+.app-head .nm { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: rgb(var(--mdui-color-on-surface)); }
+.app-head .desc { font-size: 13px; opacity: .65; margin-top: 4px; line-height: 1.6; }
+.app-head .cid { font-size: 12px; font-family: ui-monospace, monospace; opacity: .5; margin-top: 6px; }
+.meta-row { display: flex; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
+.meta-row .m { font-size: 12px; opacity: .7; }
+.meta-row .m b { display: block; font-weight: 600; color: rgb(var(--mdui-color-on-surface)); margin-top: 2px; }
+.back-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; opacity: .7; cursor: pointer; margin-bottom: 14px; }
+.back-btn:hover { opacity: 1; }
+.scope-check { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; background: rgb(var(--mdui-color-surface-container)); margin-bottom: 10px; color: rgb(var(--mdui-color-on-surface)); }
+.scope-check .txt { flex: 1; }
+.scope-check .t { font-size: 14px; font-weight: 600; color: rgb(var(--mdui-color-on-surface)); }
+.scope-check .d { font-size: 12px; opacity: .65; margin-top: 2px; line-height: 1.6; color: rgb(var(--mdui-color-on-surface-variant)); }
+.danger-zone { padding: 20px 24px; border-radius: 18px; max-width: 560px; border: 1px solid rgba(239,68,68,.35); background: rgba(239,68,68,.06); }
+.danger-zone .dz-t { font-size: 14px; font-weight: 700; color: #f87171; display: flex; align-items: center; gap: 6px; }
+.danger-zone .dz-d { font-size: 12px; opacity: .65; margin: 6px 0 14px; line-height: 1.6; }
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.actions mdui-button { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand-mini" onclick="location.href='../index.html'"><div class="dot">A</div>Auth Center</div>
+  <div class="me">
+    <button class="theme-toggle" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
+    <span style="font-size:13px; opacity:.7;">豁达的金雕</span>
+    <mdui-avatar style="--mdui-avatar-size: 34px; background:linear-gradient(135deg,#f59e0b,#ef4444); font-weight:700;">金</mdui-avatar>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="nav-item" onclick="location.href='index.html'"><mdui-icon class="ic" name="dashboard--outlined"></mdui-icon>总览</div>
+    <div class="nav-item on" onclick="location.href='apps.html'"><mdui-icon class="ic" name="apps--outlined"></mdui-icon>我的应用</div>
+    <div class="nav-item" onclick="location.href='keys.html'"><mdui-icon class="ic" name="key--outlined"></mdui-icon>API 密钥</div>
+    <div class="nav-item" onclick="location.href='auth.html'"><mdui-icon class="ic" name="verified_user--outlined"></mdui-icon>授权管理</div>
+    <div class="nav-item" onclick="location.href='profile.html'"><mdui-icon class="ic" name="person--outlined"></mdui-icon>个人设置</div>
+  </div>
+
+  <div class="content">
+    <div class="back-btn" onclick="location.href='apps.html'"><mdui-icon name="arrow_back--outlined" style="font-size:18px;"></mdui-icon>返回我的应用</div>
+
+    <!-- 应用信息头部 -->
+    <mdui-card class="app-head" variant="elevated">
+      <mdui-avatar id="h-avatar" style="--mdui-avatar-size:56px; border-radius:18px;"></mdui-avatar>
+      <div class="info">
+        <div class="nm"><span id="h-name"></span><mdui-badge id="h-status"></mdui-badge></div>
+        <div class="desc" id="h-desc"></div>
+        <div class="cid" id="h-cid"></div>
+      </div>
+    </mdui-card>
+
+    <!-- 基本设置 -->
+    <mdui-card class="form-card" variant="elevated">
+      <div class="sec-title" style="margin:0 0 16px;">基本设置</div>
+      <div class="form-field">
+        <mdui-text-field id="app-name" label="应用名称" icon="badge--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-desc" label="应用简介" placeholder="一句话描述这个应用是干什么的" icon="description--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-callback" label="回调地址 (Callback URL)" icon="link--outlined" clearable full-width></mdui-text-field>
+        <div class="callback-hint">用户授权后会跳转到这个地址，并附带授权码。生产环境必须使用 HTTPS。</div>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-homepage" label="应用主页 (可选)" icon="language--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="meta-row" id="h-meta"></div>
+      <div class="actions">
+        <mdui-button variant="text" onclick="location.href='apps.html'">取 消</mdui-button>
+        <mdui-button variant="filled" icon="check--outlined" onclick="saveApp()">保存修改</mdui-button>
+      </div>
+    </mdui-card>
+
+    <!-- 权限范围 -->
+    <mdui-card class="form-card" variant="elevated">
+      <div class="sec-title" style="margin:0 0 12px;">权限范围</div>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-basic"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">查看基本信息</div>
+          <div class="d">头像、昵称、用户 ID，用于展示登录状态（默认必选）</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-netdisk"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">访问网盘文件</div>
+          <div class="d">读取和上传文件，用于素材存取等场景</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-voice"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">使用语音服务</div>
+          <div class="d">调用 TTS / STT 配额进行语音合成与识别</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-notify"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">发送通知</div>
+          <div class="d">向用户设备推送登录与安全提醒</div>
+        </div>
+      </label>
+    </mdui-card>
+
+    <!-- 危险区 -->
+    <div class="danger-zone">
+      <div class="dz-t"><mdui-icon name="warning--outlined" style="font-size:18px;"></mdui-icon>危险区</div>
+      <div class="dz-d">删除应用后，所有关联的密钥和授权将立即失效，此操作不可撤销。</div>
+      <mdui-button variant="tonal" color="error" icon="delete--outlined" onclick="deleteApp()">删除应用</mdui-button>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/mdui.global.js"></script>
+<script>
+// 应用数据（静态演示，后续对接后端）
+const APPS = {
+  'verity_3f2a9c8e': {
+    name: 'Verity 影院',
+    desc: '沉浸式影院模组，为 Minecraft 提供电影级开场与剧情播放体验。',
+    client_id: 'verity_3f2a9c8e',
+    callback: 'https://verity.mcmod.local/callback',
+    homepage: 'https://verity.mcmod.local',
+    created: '2026-08-10',
+    updated: '2026-08-16',
+    status: '已上线',
+    statusColor: 'tertiary',
+    gradient: 'linear-gradient(135deg,#2dd4bf,#0ea5e9)',
+    icon: 'movie--outlined',
+    scopes: { basic: true, netdisk: true, voice: true, notify: false },
+  },
+  'tts_gw_b1d4e7': {
+    name: '语音网关',
+    desc: 'TTS + LLM 统一网关，为模组提供语音合成、识别与大模型对话能力。',
+    client_id: 'tts_gw_b1d4e7',
+    callback: 'https://gw.mcmod.local/callback',
+    homepage: 'https://gw.mcmod.local',
+    created: '2026-08-14',
+    updated: '2026-08-16',
+    status: '已上线',
+    statusColor: 'tertiary',
+    gradient: 'linear-gradient(135deg,#a78bfa,#8b5cf6)',
+    icon: 'record_voice_over--outlined',
+    scopes: { basic: true, netdisk: false, voice: true, notify: false },
+  },
+  'xiaomi_bot_dev': {
+    name: '虾米 Bot',
+    desc: 'QQ 上的 AI 朋友，提供闲聊、工具调用与语音互动能力。',
+    client_id: 'xiaomi_bot_dev',
+    callback: 'https://bot.mcmod.local/callback',
+    homepage: 'https://bot.mcmod.local',
+    created: '2026-08-15',
+    updated: '2026-08-15',
+    status: '开发中',
+    statusColor: 'primary',
+    gradient: 'linear-gradient(135deg,#fbbf24,#f59e0b)',
+    icon: 'smart_toy--outlined',
+    scopes: { basic: true, netdisk: false, voice: false, notify: true },
+  },
+};
+
+// 从 URL 读取应用 ID
+const params = new URLSearchParams(location.search);
+const appId = params.get('id') || 'verity_3f2a9c8e';
+const app = APPS[appId] || APPS['verity_3f2a9c8e'];
+
+// 渲染
+document.title = `${app.name} · Auth Center`;
+document.getElementById('h-avatar').style.background = app.gradient;
+document.getElementById('h-avatar').innerHTML = `<mdui-icon name="${app.icon}" style="font-size:26px;"></mdui-icon>`;
+document.getElementById('h-name').textContent = app.name;
+const st = document.getElementById('h-status');
+st.textContent = app.status;
+st.setAttribute('color', app.statusColor);
+document.getElementById('h-desc').textContent = app.desc;
+document.getElementById('h-cid').textContent = `client_id: ${app.client_id}`;
+document.getElementById('app-name').value = app.name;
+document.getElementById('app-desc').value = app.desc;
+document.getElementById('app-callback').value = app.callback;
+document.getElementById('app-homepage').value = app.homepage;
+document.getElementById('h-meta').innerHTML =
+  `<div class="m">创建时间<b>${app.created}</b></div>` +
+  `<div class="m">最近更新<b>${app.updated}</b></div>`;
+document.getElementById('scope-basic').checked = app.scopes.basic;
+document.getElementById('scope-netdisk').checked = app.scopes.netdisk;
+document.getElementById('scope-voice').checked = app.scopes.voice;
+document.getElementById('scope-notify').checked = app.scopes.notify;
+
+function saveApp() {
+  const name = document.getElementById('app-name').value || '';
+  if (!name.trim()) { mdui.snackbar('应用名称不能为空'); return; }
+  mdui.snackbar('修改已保存');
+}
+
+function deleteApp() {
+  mdui.dialog({
+    headline: '删除应用',
+    description: `确定要删除「${app.name}」吗？所有关联的密钥和授权将立即失效，此操作不可撤销。`,
+    actions: [
+      { text: '取消' },
+      { text: '删除', color: 'error', onClick: () => {
+        mdui.snackbar('应用已删除');
+        setTimeout(() => location.href = 'apps.html', 900);
+      }},
+    ],
+  });
+}
+</script>
+</body>
+</html>

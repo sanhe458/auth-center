@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+<meta name="renderer" content="webkit"/>
+<link rel="stylesheet" href="../lib/mdui.css">
+<script src="../lib/theme.js"></script>
+<link rel="stylesheet" href="../lib/material-icons.css">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/user.css">
+<title>生成密钥 · Auth Center</title>
+<style>
+.form-card { padding: 24px; border-radius: 18px; max-width: 560px; }
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.actions mdui-button { flex: 1; }
+.result-card { padding: 20px; border-radius: 18px; max-width: 560px; display: none; }
+.token-box { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand-mini" onclick="location.href='../index.html'"><div class="dot">A</div>Auth Center</div>
+  <div class="me">
+    <button class="theme-toggle" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
+    <span style="font-size:13px; opacity:.7;">豁达的金雕</span>
+    <mdui-avatar style="--mdui-avatar-size: 34px; background:linear-gradient(135deg,#f59e0b,#ef4444); font-weight:700;">金</mdui-avatar>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="nav-item" onclick="location.href='index.html'"><mdui-icon class="ic" name="dashboard--outlined"></mdui-icon>总览</div>
+    <div class="nav-item" onclick="location.href='apps.html'"><mdui-icon class="ic" name="apps--outlined"></mdui-icon>我的应用</div>
+    <div class="nav-item on" onclick="location.href='keys.html'"><mdui-icon class="ic" name="key--outlined"></mdui-icon>API 密钥</div>
+    <div class="nav-item" onclick="location.href='auth.html'"><mdui-icon class="ic" name="verified_user--outlined"></mdui-icon>授权管理</div>
+    <div class="nav-item" onclick="location.href='profile.html'"><mdui-icon class="ic" name="person--outlined"></mdui-icon>个人设置</div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">生成密钥</div>
+    <div class="page-sub">为应用签发新的 API 密钥</div>
+
+    <!-- 表单 -->
+    <mdui-card class="form-card" variant="elevated" id="form-card">
+      <div class="form-field">
+        <mdui-text-field id="key-name" label="密钥名称" placeholder="例如：生产环境密钥 / 测试用密钥" icon="label--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-select id="key-app" label="关联应用" icon="apps--outlined" full-width>
+          <mdui-menu-item value="verity"><mdui-icon name="movie--outlined" slot="icon"></mdui-icon>Verity 影院</mdui-menu-item>
+          <mdui-menu-item value="tts_gw"><mdui-icon name="record_voice_over--outlined" slot="icon"></mdui-icon>语音网关</mdui-menu-item>
+          <mdui-menu-item value="xiaomi"><mdui-icon name="smart_toy--outlined" slot="icon"></mdui-icon>虾米 Bot</mdui-menu-item>
+          <mdui-menu-item value="custom">🔧 自定义（不关联）</mdui-menu-item>
+        </mdui-select>
+      </div>
+      <div class="form-field">
+        <mdui-select id="key-expire" label="有效期" icon="schedule--outlined" full-width>
+          <mdui-menu-item value="never">永久有效</mdui-menu-item>
+          <mdui-menu-item value="30d">30 天</mdui-menu-item>
+          <mdui-menu-item value="90d">90 天</mdui-menu-item>
+          <mdui-menu-item value="1y">1 年</mdui-menu-item>
+        </mdui-select>
+      </div>
+      <div class="sec-title" style="margin:20px 0 12px;">权限范围</div>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-llm" checked></mdui-checkbox>
+        <div class="txt">
+          <div class="t">模型调用</div>
+          <div class="d">文本对话、语音合成、语音识别等模型接口</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-netdisk"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">网盘读写</div>
+          <div class="d">访问网盘文件的上传、下载与检索</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-manage"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">应用管理</div>
+          <div class="d">创建/修改应用、管理授权（高风险，请谨慎授予）</div>
+        </div>
+      </label>
+      <div class="actions">
+        <mdui-button variant="text" onclick="location.href='keys.html'">取 消</mdui-button>
+        <mdui-button variant="filled" icon="key--outlined" onclick="genKey()">生成密钥</mdui-button>
+      </div>
+    </mdui-card>
+
+    <!-- 生成结果 -->
+    <mdui-card class="result-card" variant="elevated" id="result-card">
+      <div class="sec-title" style="margin:0 0 12px;"><mdui-icon name="check_circle--outlined" style="font-size:18px; vertical-align:-3px; margin-right:4px;"></mdui-icon>密钥已生成</div>
+      <div class="token-box" id="key-value">sk-…</div>
+      <div class="hint">密钥只显示这一次，关闭页面后无法再次查看。请立即复制并妥善保存。</div>
+      <div class="actions">
+        <mdui-button variant="text" onclick="location.href='keys.html'">完成</mdui-button>
+        <mdui-button variant="filled" icon="content_copy--outlined" onclick="copyKey()">复制密钥</mdui-button>
+      </div>
+    </mdui-card>
+  </div>
+</div>
+
+<script src="../lib/mdui.global.js"></script>
+<script>
+function genKey() {
+  const name = document.getElementById('key-name').value || '';
+  if (!name.trim()) { mdui.snackbar('请填写密钥名称'); return; }
+
+  // 模拟生成密钥
+  const rand = () => Math.random().toString(36).slice(2, 8);
+  const key = `sk-${rand()}${rand()}${rand()}`;
+  document.getElementById('key-value').innerText = key;
+
+  document.getElementById('form-card').style.display = 'none';
+  document.getElementById('result-card').style.display = 'block';
+}
+function copyKey() {
+  const t = document.getElementById('key-value').innerText;
+  navigator.clipboard?.writeText(t);
+  mdui.snackbar('已复制到剪贴板');
+}
+</script>
+</body>
+</html>

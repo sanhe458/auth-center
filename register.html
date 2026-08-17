@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+<meta name="renderer" content="webkit"/>
+<link rel="stylesheet" href="lib/mdui.css">
+<script src="lib/theme.js"></script>
+<link rel="stylesheet" href="lib/material-icons.css">
+<link rel="stylesheet" href="css/common.css">
+<title>注册 · Auth Center</title>
+</head>
+<body>
+<button class="theme-toggle fixed" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
+
+<div class="page active" id="page-register">
+  <div class="center-wrap">
+    <div class="auth-card">
+      <div class="brand"><div class="logo">A</div><h1>创建账号</h1><p>加入 Auth Center</p></div>
+      <mdui-card class="auth-card" variant="elevated" style="border-radius:24px;">
+        <div style="padding:24px;">
+          <div class="form-field"><mdui-text-field id="reg-name" label="昵称" placeholder="给自己起个名字" icon="badge--outlined" clearable full-width></mdui-text-field></div>
+          <div class="form-field"><mdui-text-field id="reg-email" label="邮箱" placeholder="name@example.com" icon="mail--outlined" type="email" clearable full-width></mdui-text-field></div>
+          <div class="form-field"><mdui-text-field id="reg-pass" label="密码" placeholder="至少 8 位" icon="lock--outlined" type="password" toggle-password clearable full-width></mdui-text-field></div>
+          <div class="form-field"><mdui-text-field id="reg-pass2" label="确认密码" placeholder="再输一遍" icon="lock--outlined" type="password" toggle-password clearable full-width></mdui-text-field></div>
+          <mdui-button variant="filled" icon="how_to_reg--outlined" full-width onclick="doRegister()">注 册</mdui-button>
+          <div style="text-align:center; margin-top:14px;">
+            <mdui-button variant="text" onclick="location.href='login.html'">← 返回登录</mdui-button>
+          </div>
+        </div>
+      </mdui-card>
+    </div>
+  </div>
+</div>
+
+<script src="lib/mdui.global.js"></script>
+<script>
+function doRegister() {
+  const name  = document.getElementById('reg-name').value || '';
+  const email = document.getElementById('reg-email').value || '';
+  const p1    = document.getElementById('reg-pass').value || '';
+  const p2    = document.getElementById('reg-pass2').value || '';
+  if (!name.trim()) { mdui.snackbar('请填写昵称'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { mdui.snackbar('请输入有效的邮箱地址'); return; }
+  if (p1.length < 8) { mdui.snackbar('密码至少 8 位'); return; }
+  if (p1 !== p2) { mdui.snackbar('两次输入的密码不一致'); return; }
+  mdui.snackbar('注册成功，即将跳转登录…');
+  setTimeout(() => location.href = 'login.html', 800);
+}
+</script>
+</body>
+</html>

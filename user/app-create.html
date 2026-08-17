@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+<meta name="renderer" content="webkit"/>
+<link rel="stylesheet" href="../lib/mdui.css">
+<script src="../lib/theme.js"></script>
+<link rel="stylesheet" href="../lib/material-icons.css">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/user.css">
+<title>创建应用 · Auth Center</title>
+<style>
+/* 创建应用页样式 */
+.form-card { padding: 24px; border-radius: 18px; max-width: 560px; }
+.scope-check { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; background: rgb(var(--mdui-color-surface-container)); margin-bottom: 10px; color: rgb(var(--mdui-color-on-surface)); }
+.scope-check .txt { flex: 1; }
+.scope-check .t { font-size: 14px; font-weight: 600; color: rgb(var(--mdui-color-on-surface)); }
+.scope-check .d { font-size: 12px; opacity: .65; margin-top: 2px; line-height: 1.6; color: rgb(var(--mdui-color-on-surface-variant)); }
+.callback-hint { font-size: 12px; opacity: .55; margin-top: 6px; line-height: 1.7; }
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.actions mdui-button { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand-mini" onclick="location.href='../index.html'"><div class="dot">A</div>Auth Center</div>
+  <div class="me">
+    <button class="theme-toggle" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
+    <span style="font-size:13px; opacity:.7;">豁达的金雕</span>
+    <mdui-avatar style="--mdui-avatar-size: 34px; background:linear-gradient(135deg,#f59e0b,#ef4444); font-weight:700;">金</mdui-avatar>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="nav-item" onclick="location.href='index.html'"><mdui-icon class="ic" name="dashboard--outlined"></mdui-icon>总览</div>
+    <div class="nav-item on" onclick="location.href='apps.html'"><mdui-icon class="ic" name="apps--outlined"></mdui-icon>我的应用</div>
+    <div class="nav-item" onclick="location.href='keys.html'"><mdui-icon class="ic" name="key--outlined"></mdui-icon>API 密钥</div>
+    <div class="nav-item" onclick="location.href='auth.html'"><mdui-icon class="ic" name="verified_user--outlined"></mdui-icon>授权管理</div>
+    <div class="nav-item" onclick="location.href='profile.html'"><mdui-icon class="ic" name="person--outlined"></mdui-icon>个人设置</div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">创建应用</div>
+    <div class="page-sub">注册一个新应用，接入 Auth Center 统一认证</div>
+
+    <mdui-card class="form-card" variant="elevated">
+      <div class="form-field">
+        <mdui-text-field id="app-name" label="应用名称" placeholder="给你的应用起个名字" icon="badge--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-desc" label="应用简介" placeholder="一句话描述这个应用是干什么的" icon="description--outlined" clearable full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-callback" label="回调地址 (Callback URL)" placeholder="https://yourapp.com/callback" icon="link--outlined" clearable full-width></mdui-text-field>
+        <div class="callback-hint">用户授权后会跳转到这个地址，并附带授权码。生产环境必须使用 HTTPS。</div>
+      </div>
+      <div class="form-field">
+        <mdui-text-field id="app-homepage" label="应用主页 (可选)" placeholder="https://yourapp.com" icon="language--outlined" clearable full-width></mdui-text-field>
+      </div>
+
+      <div class="sec-title" style="margin:20px 0 12px;">权限范围</div>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-basic" checked></mdui-checkbox>
+        <div class="txt">
+          <div class="t">查看基本信息</div>
+          <div class="d">头像、昵称、用户 ID，用于展示登录状态（默认必选）</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-netdisk"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">访问网盘文件</div>
+          <div class="d">读取和上传文件，用于素材存取等场景</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-voice"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">使用语音服务</div>
+          <div class="d">调用 TTS / STT 配额进行语音合成与识别</div>
+        </div>
+      </label>
+      <label class="scope-check">
+        <mdui-checkbox id="scope-notify"></mdui-checkbox>
+        <div class="txt">
+          <div class="t">发送通知</div>
+          <div class="d">向用户设备推送登录与安全提醒</div>
+        </div>
+      </label>
+
+      <div class="actions">
+        <mdui-button variant="text" onclick="location.href='apps.html'">取 消</mdui-button>
+        <mdui-button variant="filled" icon="check--outlined" onclick="createApp()">创建应用</mdui-button>
+      </div>
+    </mdui-card>
+  </div>
+</div>
+
+<script src="../lib/mdui.global.js"></script>
+<script>
+function createApp() {
+  const name = document.getElementById('app-name').value || '';
+  const cb   = document.getElementById('app-callback').value || '';
+  if (!name.trim()) { mdui.snackbar('请填写应用名称'); return; }
+  if (!cb.trim()) { mdui.snackbar('请填写回调地址'); return; }
+  if (!/^https?:\/\//.test(cb.trim())) { mdui.snackbar('回调地址需以 http:// 或 https:// 开头'); return; }
+
+  // 收集选中的权限
+  const scopes = [];
+  if (document.getElementById('scope-basic').checked) scopes.push('基本信息');
+  if (document.getElementById('scope-netdisk').checked) scopes.push('网盘');
+  if (document.getElementById('scope-voice').checked) scopes.push('语音');
+  if (document.getElementById('scope-notify').checked) scopes.push('通知');
+
+  mdui.snackbar(`应用「${name.trim()}」创建成功！`);
+  setTimeout(() => location.href = 'apps.html', 900);
+}
+</script>
+</body>
+</html>

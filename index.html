@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+<meta name="renderer" content="webkit"/>
+<link rel="stylesheet" href="lib/mdui.css">
+<script src="lib/theme.js"></script>
+<link rel="stylesheet" href="lib/material-icons.css">
+<link rel="stylesheet" href="css/common.css">
+<title>Auth Center · 统一身份认证</title>
+<style>
+/* 首页专用样式 */
+.hero {
+  min-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+.hero .logo {
+  width: 84px; height: 84px; margin: 0 auto 24px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffb74d, #ff7043);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 800; color: #3a1d00;
+  box-shadow: 0 16px 44px rgba(255,167,38,.4);
+}
+.hero h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: .5px; }
+.hero .sub { margin: 12px 0 0; font-size: 16px; opacity: .7; max-width: 480px; line-height: 1.7; }
+.hero .cta { display: flex; gap: 14px; margin-top: 36px; }
+.hero .cta mdui-button { min-width: 130px; }
+.hero .meta { margin-top: 30px; font-size: 13px; opacity: .5; }
+
+/* 特性区 */
+.features {
+  max-width: 860px; margin: 0 auto; padding: 40px 24px 80px;
+}
+.features .section-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.features .section-sub { text-align: center; font-size: 14px; opacity: .6; margin-bottom: 32px; }
+.feat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
+}
+.feat-card { padding: 22px; border-radius: 18px; }
+.feat-card .ic {
+  width: 46px; height: 46px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  background: rgb(var(--mdui-color-surface-container-high));
+  margin-bottom: 14px;
+}
+.feat-card .t { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.feat-card .d { font-size: 13px; opacity: .65; line-height: 1.6; }
+
+/* 顶部导航 */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; position: absolute; top: 0; left: 0; right: 0;
+}
+.nav .brand-mini { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.nav .brand-mini .dot {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg, #ffb74d, #ff7043);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #3a1d00;
+}
+.nav .links { display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<button class="theme-toggle fixed" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
+
+<!-- 顶部导航 -->
+<div class="nav">
+  <div class="brand-mini"><div class="dot">A</div>Auth Center</div>
+  <div class="links">
+    <mdui-button variant="text" onclick="location.href='login.html'">登 录</mdui-button>
+    <mdui-button variant="filled" onclick="location.href='register.html'">注 册</mdui-button>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="logo">A</div>
+  <h1>统一身份认证</h1>
+  <div class="sub">一个账号，通行所有应用。<br>登录一次，你的应用、语音、网盘全部接入。</div>
+  <div class="cta">
+    <mdui-button variant="filled" icon="login" onclick="location.href='login.html'">立即登录</mdui-button>
+    <mdui-button variant="tonal" icon="how_to_reg--outlined" onclick="location.href='register.html'">注册账号</mdui-button>
+  </div>
+  <div class="meta">支持微信 / QQ / GitHub 第三方登录</div>
+</div>
+
+<!-- 特性 -->
+<div class="features">
+  <div class="section-title">能做什么</div>
+  <div class="section-sub">为你的应用和服务提供统一认证能力</div>
+  <div class="feat-grid">
+    <mdui-card class="feat-card" variant="elevated">
+      <mdui-icon class="ic" name="lock--outlined"></mdui-icon>
+      <div class="t">统一登录</div>
+      <div class="d">一套账号体系，接入所有应用，免去重复注册登录。</div>
+    </mdui-card>
+    <mdui-card class="feat-card" variant="elevated">
+      <mdui-icon class="ic" name="key--outlined"></mdui-icon>
+      <div class="t">API 密钥管理</div>
+      <div class="d">为每个应用单独签发密钥，随时吊销，权限可控。</div>
+    </mdui-card>
+    <mdui-card class="feat-card" variant="elevated">
+      <mdui-icon class="ic" name="check_circle--outlined"></mdui-icon>
+      <div class="t">授权确认</div>
+      <div class="d">应用申请权限时向你明示，可随时在控制台撤回。</div>
+    </mdui-card>
+    <mdui-card class="feat-card" variant="elevated">
+      <mdui-icon class="ic" name="security--outlined"></mdui-icon>
+      <div class="t">安全审计</div>
+      <div class="d">登录记录、授权记录、密钥使用情况一目了然。</div>
+    </mdui-card>
+  </div>
+</div>
+
+<script src="lib/mdui.global.js"></script>
+</body>
+</html>

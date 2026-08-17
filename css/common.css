@@ -1,0 +1,106 @@
+/* Auth Center 公共样式 */
+/* 品牌色：浅色用标准 Material 紫（对比度好），暗色用自定义亮紫 */
+:root {
+  --mdui-color-primary-light: 239,108,0;
+  --mdui-color-primary-dark: 255,167,38;
+  --mdui-color-on-primary-dark: 46,22,0;
+}
+/* OLED 纯黑暗色模式：背景真正纯黑，组件用极深灰分层 */
+.mdui-theme-dark {
+  --mdui-color-surface: 0,0,0;
+  --mdui-color-surface-dim: 0,0,0;
+  --mdui-color-surface-bright: 12,12,14;
+  --mdui-color-surface-container-lowest: 0,0,0;
+  --mdui-color-surface-container-low: 8,8,10;
+  --mdui-color-surface-container: 13,13,16;
+  --mdui-color-surface-container-high: 21,21,25;
+  --mdui-color-surface-container-highest: 30,30,35;
+  --mdui-color-background: 0,0,0;
+  --mdui-color-on-background: 230,225,229;
+  --mdui-color-on-surface-variant: 207,197,218;
+  --mdui-color-outline: 140,136,146;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(255,167,38,.14), transparent 60%),
+    radial-gradient(800px 450px at -10% 110%, rgba(255,120,80,.10), transparent 55%),
+    rgb(var(--mdui-color-surface));
+}
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; animation: fade .3s ease; }
+@keyframes fade { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform:none;} }
+
+/* 居中卡片页 */
+.center-wrap {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.auth-card { width: 100%; max-width: 400px; }
+.brand { text-align: center; margin-bottom: 24px; }
+.brand .logo {
+  width: 64px; height: 64px; margin: 0 auto 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffb74d, #ff7043);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; color: #3a1d00;
+  box-shadow: 0 12px 32px rgba(255,167,38,.35);
+}
+.brand h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: .3px; }
+.brand p { margin: 6px 0 0; font-size: 13px; opacity: .65; }
+
+.form-field { margin-bottom: 14px; }
+.btn-row { display: flex; gap: 12px; margin-top: 20px; }
+.btn-row mdui-button { flex: 1; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 16px; font-size: 12px; opacity: .5; }
+.divider::before, .divider::after { content:""; flex:1; height:1px; background: currentColor; opacity:.2; }
+.socials { display: flex; gap: 12px; }
+.socials mdui-button { flex: 1; }
+.foot { text-align: center; font-size: 12px; opacity: .5; margin-top: 20px; }
+
+/* 主题切换按钮：无顶部导航的页面（登录/注册/授权）用悬浮按钮 */
+.theme-toggle {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgb(var(--mdui-color-surface-container-high));
+  box-shadow: var(--mdui-elevation-level1);
+  cursor: pointer; border: none;
+  color: rgb(var(--mdui-color-on-surface));
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover { background: rgb(var(--mdui-color-surface-container-highest)); }
+.theme-toggle.fixed { position: fixed; top: 14px; right: 14px; z-index: 9999; }
+
+/* 授权页 */
+.oauth-app { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.oauth-app .app-logo {
+  width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  background: linear-gradient(135deg, #2dd4bf, #0ea5e9);
+}
+.oauth-app .app-name { font-size: 17px; font-weight: 700; }
+.oauth-app .app-domain { font-size: 12px; opacity: .55; margin-top: 2px; }
+.scope-title { font-size: 13px; opacity: .65; margin: 14px 0 10px; }
+
+/* 控制台 */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 4px; }
+.topbar .me { display: flex; align-items: center; gap: 10px; }
+.tabs-wrap { padding: 12px 20px 0; }
+.list-wrap { padding: 8px 16px 24px; }
+.app-ic {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  background: rgb(var(--mdui-color-surface-container-high));
+}
+.key-badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; }
+.key-badge.ok { background: rgba(76,217,150,.15); color: #4cd996; }
+.key-badge.off { background: rgba(255,160,180,.12); color: #ffa0b4; }
+.token-box {
+  background: rgb(var(--mdui-color-surface-container));
+  border: 1px dashed rgba(255,167,38,.4);
+  border-radius: 12px; padding: 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px;
+  color: rgb(var(--mdui-color-primary)); word-break: break-all; line-height: 1.7; margin-top: 12px;
+}
+.hint { font-size: 12px; opacity: .6; margin-top: 10px; line-height: 1.7; }
