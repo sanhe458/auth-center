@@ -100,6 +100,13 @@ function oauthAuthorize(): void
         'redirect_uri' => $redirectUri, 'scope' => implode(',', $requested), 'state' => $state,
     ];
 
+    // 应用 Logo：有图标显示图片，否则用占位首字母
+    $appLogo = '<div class="logo">A</div>';
+    if (!empty($app['icon'])) {
+        $iconUrl = htmlspecialchars($app['icon']);
+        $appLogo = '<div class="logo" style="overflow:hidden;"><img src="' . $iconUrl . '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px;"></div>';
+    }
+
     header('Content-Type: text/html; charset=utf-8');
 
     // 主题：优先读 auth_theme cookie，缺省跟随系统偏好
@@ -154,7 +161,7 @@ form.actions button{
 .actions .ic{font-size:18px}
 </style></head><body>
 <div class="card">
-  <div class="logo">A</div>
+  $appLogo
   <h1>$appName 请求授权</h1>
   <div class="app-domain">$appDesc</div>
   $scopesHtml
