@@ -28,7 +28,7 @@ $typeLabel = [
     'admin_adjust' => ['管理员调整', 'warning'],
 ];
 
-pageHead('我的余额', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('我的余额', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('wallet');

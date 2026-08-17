@@ -36,7 +36,7 @@ foreach ($st->fetchAll() as $row) {
     $socials[$row['provider']] = $row;
 }
 
-pageHead('绑定渠道', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('绑定渠道', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('bindings');

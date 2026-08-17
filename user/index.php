@@ -33,7 +33,7 @@ $st = $db->prepare('SELECT balance FROM users WHERE id = ? LIMIT 1');
 $st->execute([$user['id']]);
 $balanceFen = (int)$st->fetch()['balance'];
 
-pageHead('总览', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('总览', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('index');

@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 
 $granted = explode(',', $auth['granted']);
 
-pageHead('权限管理', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('权限管理', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('auth');

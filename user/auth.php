@@ -42,7 +42,7 @@ $receivedAuths = $st->fetchAll();
 
 $scopeLabels = scopeLabels();
 
-pageHead('授权管理', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('授权管理', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('auth');

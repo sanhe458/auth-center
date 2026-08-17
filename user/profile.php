@@ -44,7 +44,7 @@ if (($_POST['action'] ?? '') === 'password') {
     }
 }
 
-pageHead('个人设置', '<link rel="stylesheet" href="/css/user.css">');
+pageHead('个人设置', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
 pageSidebar('profile');
