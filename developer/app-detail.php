@@ -191,4 +191,4 @@ devSidebar('devapps');
 </script>
 <?php
 echo '</div>';
-pageFoot('<script src="/js/avatar-crop.js"></script>'); ?>
+pageFoot('<script src="/js/avatar-crop.js?v=2"></script>'); ?>
