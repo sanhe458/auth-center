@@ -85,13 +85,18 @@ devSidebar('devapps');
 
     <!-- 应用信息头部 -->
     <mdui-card class="app-head" variant="elevated">
-      <mdui-avatar id="h-avatar" style="--mdui-avatar-size:56px; border-radius:18px; background:linear-gradient(135deg,#2dd4bf,#0ea5e9);"><mdui-icon name="movie--outlined" style="font-size:26px;"></mdui-icon></mdui-avatar>
+      <div style="position:relative;">
+        <mdui-avatar id="h-avatar" style="--mdui-avatar-size:56px; border-radius:18px;"><?php if (!empty($app['icon'])): ?><img src="<?= htmlspecialchars($app['icon']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:18px;"><?php else: ?><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2dd4bf,#0ea5e9);border-radius:18px;"><mdui-icon name="apps--outlined" style="font-size:26px;"></mdui-icon></div><?php endif; ?></mdui-avatar>
+        <input type="file" id="icon-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;">
+        <mdui-icon name="edit--outlined" onclick="document.getElementById('icon-input').click()" style="position:absolute;bottom:-4px;right:-4px;background:var(--mdui-color-surface-container);border-radius:50%;padding:4px;font-size:16px;cursor:pointer;border:1px solid var(--ac-border,#26262e);"></mdui-icon>
+      </div>
       <div class="info">
         <div class="nm"><?= htmlspecialchars($app['name']) ?> <?= appStatusBadge((int)$app['status']) ?></div>
         <div class="desc"><?= htmlspecialchars($app['description']) ?></div>
         <div class="cid">client_id: <?= htmlspecialchars($app['client_id']) ?></div>
       </div>
     </mdui-card>
+    <div id="icon-status" style="font-size:12px;opacity:.7;margin-top:6px;"></div>
 
     <!-- 基本设置 -->
     <form method="POST">
@@ -146,6 +151,82 @@ devSidebar('devapps');
       </form>
     </div>
 </div>
+<script>
+(function(){
+  const clientId = <?= json_encode($app['client_id']) ?>;
+  const input = document.getElementById('icon-input');
+  const status = document.getElementById('icon-status');
+  const avatar = document.getElementById('h-avatar');
+  const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+  const MAX_DIM = 256;
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        const scale = Math.min(1, MAX_DIM / Math.max(width, height));
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        const qualities = [0.85, 0.7, 0.6, 0.5, 0.45];
+        let i = 0;
+        const tryNext = () => {
+          if (i >= qualities.length) {
+            canvas.toBlob(blob => blob ? resolve({ blob, quality: qualities[i-1] }) : reject(new Error('压缩失败')), 'image/jpeg', qualities[i-1]); return;
+          }
+          canvas.toBlob(blob => {
+            if (!blob) return reject(new Error('压缩失败'));
+            if (blob.size <= MAX_BYTES) resolve({ blob, quality: qualities[i] });
+            else { i++; tryNext(); }
+          }, 'image/jpeg', qualities[i]);
+        };
+        tryNext();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片解析失败')); };
+      img.src = url;
+    });
+  }
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+    const ok = /^image\/(jpeg|png|gif|webp)$/.test(file.type);
+    if (!ok) { status.textContent = '格式不支持，仅 JPG/PNG/GIF/WebP'; return; }
+    let selected = file;
+    if (file.size > MAX_BYTES && file.type !== 'image/gif') {
+      status.textContent = '图片超过 2MB，正在压缩…';
+      try {
+        const { blob } = await compressImage(file);
+        selected = new File([blob], 'icon.' + (blob.type === 'image/png' ? 'png' : 'jpg'), { type: blob.type });
+      } catch (e) { status.textContent = '压缩失败：' + e.message; return; }
+    } else if (file.size > MAX_BYTES) {
+      status.textContent = 'GIF 超过 2MB，请换图';
+      return;
+    }
+    status.textContent = '上传中…';
+    const fd = new FormData();
+    fd.append('client_id', clientId);
+    fd.append('icon', selected);
+    try {
+      const r = await fetch('/api/apps/icon', { method: 'POST', body: fd, credentials: 'same-origin' });
+      const d = await r.json();
+      if (r.ok && d.icon) {
+        avatar.innerHTML = '<img src="' + d.icon + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:18px;">';
+        status.textContent = '✅ 头像已更新';
+      } else {
+        status.textContent = '上传失败：' + (d.error || d.message || '未知错误');
+      }
+    } catch (e) { status.textContent = '网络错误：' + e.message; }
+  });
+})();
+</script>
 <?php
 echo '</div>';
 pageFoot(); ?>

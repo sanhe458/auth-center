@@ -41,7 +41,7 @@ contentOpen('我的应用', '管理接入 Auth Center 的应用');
       </mdui-card>
       <?php else: foreach ($apps as $i => $app): $g = $gradients[$i % count($gradients)]; $ic = $icons[$i % count($icons)]; ?>
       <mdui-list-item nonclickable>
-        <mdui-avatar slot="icon" style="--mdui-avatar-size:42px; border-radius:14px; background:<?= $g ?>;"><mdui-icon name="<?= $ic ?>" style="font-size:22px;"></mdui-icon></mdui-avatar>
+        <mdui-avatar slot="icon" style="--mdui-avatar-size:42px; border-radius:14px;"><?php if (!empty($app['icon'])): ?><img src="<?= htmlspecialchars($app['icon']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;"><?php else: ?><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:<?= $g ?>;border-radius:14px;"><mdui-icon name="<?= $ic ?>" style="font-size:22px;"></mdui-icon></div><?php endif; ?></mdui-avatar>
         <?= htmlspecialchars($app['name']) ?>
         <span slot="description" style="font-family:ui-monospace,monospace; font-size:12px;">client_id: <?= htmlspecialchars($app['client_id']) ?> · 创建于 <?= substr($app['created_at'], 0, 10) ?></span>
         <mdui-button slot="end-icon" variant="text" icon="settings--outlined" onclick="location.href='app-detail.php?id=<?= urlencode($app['client_id']) ?>'"></mdui-button>

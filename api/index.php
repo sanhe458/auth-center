@@ -102,10 +102,12 @@ try {
         // 应用管理
         case 'apps':
             switch ($action) {
-                case 'list':   appsList(); break;
-                case 'create': appsCreate(); break;
-                case 'update': appsUpdate(); break;
-                case 'delete': appsDelete(); break;
+                case 'list':        appsList(); break;
+                case 'create':      appsCreate(); break;
+                case 'update':      appsUpdate(); break;
+                case 'delete':      appsDelete(); break;
+                case 'icon':        appsIcon(); break;
+                case 'icon_remove': appsIconRemove(); break;
                 default: fail(40000, '未知应用操作', 404);
             }
             break;

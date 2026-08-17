@@ -37,6 +37,7 @@ function appsList(): void
             'client_id'  => $r['client_id'],
             'name'       => $r['name'],
             'description'=> $r['description'],
+            'icon'       => $r['icon'] ?? null,
             'callback'   => $r['callback_url'],
             'homepage'   => $r['homepage'],
             'status'     => (int)$r['status'],
@@ -158,5 +159,76 @@ function appsDelete(): void
     $db->prepare('DELETE FROM apps WHERE id = ?')->execute([$app['id']]);
     $db->commit();
 
+    ok();
+}
+
+/**
+ * POST /apps/icon 上传应用图标（转发 imgbb 图床）
+ * multipart: icon=<file> + client_id，需登录态（应用 owner）
+ */
+function appsIcon(): void
+{
+    $userId = requireUser();
+    $clientId = (string)param('client_id', '');
+
+    $app = db()->prepare('SELECT * FROM apps WHERE client_id = ? AND owner_id = ? LIMIT 1');
+    $app->execute([$clientId, $userId]);
+    $app = $app->fetch();
+    if (!$app) fail(42004, '应用不存在或无权操作', 404);
+
+    if (empty($_FILES['icon']) || ($_FILES['icon']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        fail(41009, '请选择要上传的图片', 400);
+    }
+
+    $file = $_FILES['icon'];
+    $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp'];
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+    if (!isset($allowed[$mime])) {
+        fail(41010, '仅支持 JPG/PNG/GIF/WebP 格式', 400);
+    }
+    if ($file['size'] > 2 * 1024 * 1024) {
+        fail(41011, '图片不能超过 2MB，请压缩后上传', 400);
+    }
+
+    // 转 base64 上传 imgbb
+    $b64 = base64_encode(file_get_contents($file['tmp_name']));
+    $ch = curl_init('https://api.imgbb.com/1/upload?key=' . cfg('imgbb_key'));
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_POSTFIELDS     => http_build_query(['image' => $b64]),
+    ]);
+    $resp = curl_exec($ch);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+    $data = json_decode((string)$resp, true);
+    if (!$data || !($data['success'] ?? false)) {
+        error_log('[app-icon] imgbb 上传失败: ' . ($curlErr ?: ($resp ?: 'empty')));
+        fail(41012, '图床上传失败，请稍后再试', 502);
+    }
+
+    $url = $data['data']['url'];
+    db()->prepare('UPDATE apps SET icon = ? WHERE id = ?')->execute([$url, $app['id']]);
+
+    ok(['icon' => $url, 'delete_url' => $data['data']['delete_url'] ?? null]);
+}
+
+/**
+ * POST /apps/icon_remove 移除应用图标
+ * { client_id }
+ */
+function appsIconRemove(): void
+{
+    $userId = requireUser();
+    $clientId = (string)param('client_id', '');
+
+    $app = db()->prepare('SELECT * FROM apps WHERE client_id = ? AND owner_id = ? LIMIT 1');
+    $app->execute([$clientId, $userId]);
+    $app = $app->fetch();
+    if (!$app) fail(42004, '应用不存在或无权操作', 404);
+
+    db()->prepare('UPDATE apps SET icon = NULL WHERE id = ?')->execute([$app['id']]);
     ok();
 }
