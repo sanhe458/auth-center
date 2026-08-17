@@ -16,6 +16,7 @@ window.AvatarCrop = (function () {
   let container = null;      // modal 根元素
   let imgEl = null;          // 可拖拽的图片
   let frameEl = null;        // 裁切框（1:1）
+  let sliderEl = null;       // 缩放滑块
   let wrapEl = null;         // 容器
   let img = null;            // Image
   let scale = 1;             // 当前缩放
@@ -54,6 +55,26 @@ window.AvatarCrop = (function () {
     frameEl.style.cssText = 'position:absolute;inset:0;box-shadow:0 0 0 9999px rgba(0,0,0,.5);border:2px solid #ffa726;border-radius:8px;pointer-events:none;';
     wrapEl.appendChild(frameEl);
 
+    // 缩放滑块（原生 range，适配触控滑动）
+    const sliderRow = document.createElement('div');
+    sliderRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:14px;';
+    const minusLabel = document.createElement('span');
+    minusLabel.textContent = '−';
+    minusLabel.style.cssText = 'font-size:18px;color:#999;user-select:none;';
+    sliderEl = document.createElement('input');
+    sliderEl.type = 'range';
+    sliderEl.min = '0';
+    sliderEl.max = '100';
+    sliderEl.value = '50';    // 初始映射到 scale 基线（见 syncSlider）
+    sliderEl.style.cssText = 'flex:1;-webkit-appearance:none;appearance:none;height:40px;background:transparent;cursor:pointer;touch-action:none;';
+    sliderEl.addEventListener('input', onSliderInput);
+    const plusLabel = document.createElement('span');
+    plusLabel.textContent = '+';
+    plusLabel.style.cssText = 'font-size:18px;color:#999;user-select:none;';
+    sliderRow.appendChild(minusLabel);
+    sliderRow.appendChild(sliderEl);
+    sliderRow.appendChild(plusLabel);
+
     // 按钮行
     const btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:10px;margin-top:14px;justify-content:flex-end;';
@@ -71,6 +92,7 @@ window.AvatarCrop = (function () {
     box.appendChild(title);
     box.appendChild(hint);
     box.appendChild(wrapEl);
+    box.appendChild(sliderRow);
     box.appendChild(btnRow);
     overlay.appendChild(box);
 
@@ -142,6 +164,25 @@ window.AvatarCrop = (function () {
     applyTransform();
   }
 
+  // 设置缩放值（滑块/手势共用），范围 1~5
+  function setScale(v) {
+    scale = Math.min(5, Math.max(1, v));
+    applyTransform();
+  }
+
+  // 滑块 input：滑块值 0~100 → scale 1~5
+  function onSliderInput() {
+    const v = parseFloat(sliderEl.value) / 100; // 0~1
+    setScale(1 + v * 4);                        // 1~5
+  }
+
+  // 把当前 scale 反映到滑块（缩放后保持滑块位置一致）
+  function syncSlider() {
+    if (!sliderEl) return;
+    const v = ((scale - 1) / 4) * 100; // scale 1~5 → 0~100
+    sliderEl.value = String(Math.round(Math.min(100, Math.max(0, v))));
+  }
+
   function applyTransform() {
     const w = baseW * scale;
     const h = baseH * scale;
@@ -149,6 +190,7 @@ window.AvatarCrop = (function () {
     imgEl.style.height = h + 'px';
     imgEl.style.left = ox + 'px';
     imgEl.style.top = oy + 'px';
+    syncSlider();
   }
 
   // 初始化：以裁切框(容器)为中心铺满
