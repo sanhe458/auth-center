@@ -141,6 +141,45 @@ let original = null;      // 原始文件（用于对比）
 
   if (!fileInput || !uploadBtn) return;
 
+  const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+  const MAX_DIM = 1280;              // 最长边像素
+
+  // Canvas 压缩：等比缩放 + 循环降质量，直到达标
+  function compressImage(file, maxBytes, maxDim) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        const scale = Math.min(1, maxDim / Math.max(width, height));
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        const qualities = [0.85, 0.7, 0.6, 0.5, 0.45];
+        let i = 0;
+        const tryNext = () => {
+          if (i >= qualities.length) {
+            canvas.toBlob(blob => blob ? resolve({ blob }) : reject(new Error('压缩失败')), 'image/jpeg', qualities[i - 1]);
+            return;
+          }
+          canvas.toBlob(blob => {
+            if (!blob) return reject(new Error('压缩失败'));
+            if (blob.size <= maxBytes) resolve({ blob });
+            else { i++; tryNext(); }
+          }, 'image/jpeg', qualities[i]);
+        };
+        tryNext();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片解析失败')); };
+      img.src = url;
+    });
+  }
+
   fileInput.addEventListener('change', async function () {
     const file = this.files[0];
     if (!file) { uploadBtn.disabled = true; return; }
@@ -149,20 +188,28 @@ let original = null;      // 原始文件（用于对比）
     const ok = /^image\/(jpeg|png|gif|webp)$/.test(file.type);
     if (!ok) { status.textContent = '格式不支持，仅 JPG/PNG/GIF/WebP'; uploadBtn.disabled = true; return; }
 
-    // 打开 1:1 裁切
-    status.textContent = '正在打开裁切…';
-    uploadBtn.disabled = true;
-    try {
-      const cropped = await window.AvatarCrop.open(file);
-      selected = cropped;
-      uploadBtn.disabled = false;
-      status.textContent = '✅ 已裁切：' + Math.round(selected.size / 1024) + 'KB（1:1）';
-    } catch (e) {
-      status.textContent = e && e.message === 'cancelled' ? '已取消裁切' : '裁切失败：' + (e && e.message);
-      uploadBtn.disabled = false;
-      selected = null;
-      this.value = '';
+    // GIF 不压缩（保持动图），其他超 2MB 就压缩
+    if (file.size > MAX_BYTES && file.type !== 'image/gif') {
+      status.textContent = '图片超过 2MB，正在压缩…';
+      uploadBtn.disabled = true;
+      try {
+        const { blob } = await compressImage(file, MAX_BYTES, MAX_DIM);
+        selected = new File([blob], 'avatar_compressed.jpg', { type: blob.type });
+        uploadBtn.disabled = false;
+        status.textContent = '✅ 已压缩：' + Math.round(selected.size / 1024) + 'KB（原 ' + Math.round(file.size / 1024) + 'KB）';
+      } catch (e) {
+        status.textContent = '压缩失败：' + e.message;
+        uploadBtn.disabled = true;
+        return;
+      }
+    } else if (file.size > MAX_BYTES) {
+      status.textContent = 'GIF 超过 2MB，不支持压缩动图';
+      uploadBtn.disabled = true;
       return;
+    } else {
+      selected = file;
+      uploadBtn.disabled = false;
+      status.textContent = '已选择：' + file.name + '（' + Math.round(file.size / 1024) + 'KB）';
     }
 
     // 预览
@@ -210,4 +257,4 @@ function removeAvatar() {
 
 <?php
 echo '</div>';
-pageFoot('<script src="/js/avatar-crop.js?v=3"></script>'); ?>
+pageFoot(); ?>
