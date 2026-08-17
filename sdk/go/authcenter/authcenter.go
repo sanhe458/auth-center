@@ -189,19 +189,25 @@ func (s *AuthCenter) do(req *http.Request, out any) error {
 		return err
 	}
 
-	var envelope struct {
-		Code    int             `json:"code"`
-		Message string          `json:"message"`
-		Data    json.RawMessage `json:"data"`
+	// 标准格式：非 2xx 视为失败，取 error/message 报错；成功直接解析顶层数据
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var e struct {
+			Error   string `json:"error"`
+			Message string `json:"message"`
+			Code    int    `json:"code"`
+		}
+		_ = json.Unmarshal(raw, &e)
+		msg := e.Error
+		if msg == "" {
+			msg = e.Message
+		}
+		if msg == "" {
+			msg = fmt.Sprintf("请求失败 (HTTP %d)", resp.StatusCode)
+		}
+		return &Error{Code: e.Code, Message: msg}
 	}
-	if err := json.Unmarshal(raw, &envelope); err != nil {
-		return fmt.Errorf("响应解析失败 (HTTP %d)", resp.StatusCode)
-	}
-	if envelope.Code != 0 {
-		return &Error{Code: envelope.Code, Message: envelope.Message}
-	}
-	if out != nil && len(envelope.Data) > 0 {
-		return json.Unmarshal(envelope.Data, out)
+	if out != nil && len(raw) > 0 {
+		return json.Unmarshal(raw, out)
 	}
 	return nil
 }

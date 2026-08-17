@@ -43,15 +43,11 @@ curl -X POST https://<AUTH_SERVER>/api/notify/send \
 
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "sent": 5,
-    "failed": 1,
-    "failures": [
-      { "email": "user@example.com", "error": "RCPT TO 失败" }
-    ]
-  }
+  "sent": 5,
+  "failed": 1,
+  "failures": [
+    { "email": "user@example.com", "error": "RCPT TO 失败" }
+  ]
 }
 ```
 
@@ -90,13 +86,9 @@ curl -X POST https://<AUTH_SERVER>/api/notify/send_to_user \
 
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "sent": 1,
-    "email": "user@example.com",
-    "user": { "id": 2, "nickname": "三河" }
-  }
+  "sent": 1,
+  "email": "user@example.com",
+  "user": { "id": 2, "nickname": "三河" }
 }
 ```
 

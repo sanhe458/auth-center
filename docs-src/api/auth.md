@@ -88,15 +88,11 @@ Content-Type: application/json
 
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "access_token": "xxx",
-    "token_type": "Bearer",
-    "expires_in": 7200,
-    "refresh_token": "xxx",
-    "scope": "basic,voice"
-  }
+  "access_token": "xxx",
+  "token_type": "Bearer",
+  "expires_in": 7200,
+  "refresh_token": "xxx",
+  "scope": "basic"
 }
 ```
 

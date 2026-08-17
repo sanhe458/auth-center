@@ -14,12 +14,14 @@ function jsonOut(array $data, int $httpCode = 200): void
 
 function ok(array $data = []): void
 {
-    jsonOut(array_merge(['code' => 0, 'message' => 'ok'], ['data' => $data]));
+    // 标准格式：成功直接顶层返回数据，HTTP 200
+    jsonOut($data);
 }
 
 function fail(int $code, string $message, int $httpCode = 400): void
 {
-    jsonOut(['code' => $code, 'message' => $message], $httpCode);
+    // 标准错误格式：{ error, message } + HTTP 状态码
+    jsonOut(['error' => $message, 'code' => $code], $httpCode);
 }
 
 /** 读取 JSON body */

@@ -24,24 +24,27 @@ https://<AUTH_SERVER>/api
 
 ### 成功
 
+成功直接返回业务数据（HTTP 200）：
+
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": { }
+  "id": "u_admin001",
+  "nickname": "三河"
 }
 ```
 
 ### 失败
 
+失败返回 `error` 字段 + 非 2xx HTTP 状态码（`code` 为业务错误码，见[错误码](/api/errors)）：
+
 ```json
 {
-  "code": 40004,
-  "message": "client_secret 错误"
+  "error": "client_secret 错误",
+  "code": 40004
 }
 ```
 
-`code` 为 0 表示成功，非 0 表示失败（见[错误码](/api/errors)）。
+判断成功与否以 HTTP 状态码为准：`2xx` 成功，其他为失败。
 
 ## 接口列表
 

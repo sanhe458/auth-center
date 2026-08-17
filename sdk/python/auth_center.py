@@ -106,12 +106,10 @@ class AuthCenter:
             data = resp.json()
         except ValueError:
             raise AuthCenterError(f'响应解析失败 (HTTP {resp.status_code})')
-        if data.get('code') != 0:
-            raise AuthCenterError(
-                f"Auth Center 错误 [{data.get('code')}]: "
-                f"{data.get('message', '未知错误')}"
-            )
-        return data.get('data', {})
+        # 标准格式：非 2xx 视为失败，取 error/message 报错；成功直接返回顶层数据
+        if not resp.ok:
+            raise AuthCenterError(data.get('error') or data.get('message') or f'请求失败 (HTTP {resp.status_code})')
+        return data
 
 
 if __name__ == '__main__':

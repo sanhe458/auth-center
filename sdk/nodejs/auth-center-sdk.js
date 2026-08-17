@@ -105,10 +105,11 @@ class AuthCenter {
     } catch {
       throw new Error(`响应解析失败 (HTTP ${resp.status})`);
     }
-    if (data.code !== 0) {
-      throw new AuthCenterError(data.code, data.message || '未知错误');
+    // 标准格式：非 2xx 视为失败，取 error/message 报错；成功直接返回顶层数据
+    if (!resp.ok) {
+      throw new AuthCenterError(data.code ?? resp.status, data.error || data.message || '请求失败');
     }
-    return data.data || {};
+    return data;
   }
 }
 

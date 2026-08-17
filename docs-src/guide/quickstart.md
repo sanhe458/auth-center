@@ -80,15 +80,11 @@ curl -X POST https://<AUTH_SERVER>/api/oauth/token \
 
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "access_token": "xxx",
-    "token_type": "Bearer",
-    "expires_in": 7200,
-    "refresh_token": "xxx",
-    "scope": "basic,voice"
-  }
+  "access_token": "xxx",
+  "token_type": "Bearer",
+  "expires_in": 7200,
+  "refresh_token": "xxx",
+  "scope": "basic"
 }
 ```
 
@@ -109,15 +105,12 @@ curl https://<AUTH_SERVER>/api/info \
 
 ```json
 {
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "id": "u_xxx",
-    "nickname": "豁达的金雕",
-    "avatar": null,
-    "created_at": "2026-08-16 16:21:43",
-    "email": "user@example.com"
-  }
+  "id": "u_xxx",
+  "nickname": "豁达的金雕",
+  "avatar": null,
+  "created_at": "2026-08-16 16:21:43",
+  "email": "user@example.com"
+}
 }
 ```
 

@@ -98,7 +98,8 @@ public class AuthCenter {
                 .header("Authorization", "Bearer " + accessToken)
                 .GET()
                 .build();
-        return parse(http.send(req, HttpResponse.BodyHandlers.ofString()).body());
+        var resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+        return parse(resp.statusCode(), resp.body());
     }
 
     private Map<String, Object> post(String path, Map<String, String> body) throws Exception {
@@ -110,18 +111,23 @@ public class AuthCenter {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
-        return parse(http.send(req, HttpResponse.BodyHandlers.ofString()).body());
+        var resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+        return parse(resp.statusCode(), resp.body());
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> parse(String body) throws Exception {
+    private Map<String, Object> parse(int status, String body) throws Exception {
         // 简化 JSON 解析（生产环境建议用 Jackson/Gson）
         var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         var root = mapper.readValue(body, Map.class);
-        if (((Number) root.get("code")).intValue() != 0) {
-            throw new RuntimeException("Auth Center 错误 [" + root.get("code") + "]: " + root.get("message"));
+        // 标准格式：非 2xx 视为失败，取 error/message 报错；成功直接返回顶层数据
+        if (status < 200 || status >= 300) {
+            var err = String.valueOf(root.get("error"));
+            if ("null".equals(err)) err = String.valueOf(root.get("message"));
+            if ("null".equals(err)) err = "请求失败 (HTTP " + status + ")";
+            throw new RuntimeException(err);
         }
-        return (Map<String, Object>) root.get("data");
+        return root;
     }
 
     private static String encodeParams(Map<String, String> params) {

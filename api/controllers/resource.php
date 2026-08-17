@@ -70,7 +70,8 @@ function apiUserInfo(): void
     if (in_array('basic', $scopes, true)) {
         $data['email'] = $u['email'];
     }
-    ok($data);
+    // UserInfo 端点按标准 OAuth 顶层返回用户字段（new-api 等客户端在此取 id/nickname/email）
+    jsonOut($data);
 }
 
 /**
