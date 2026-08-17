@@ -66,6 +66,7 @@ contentOpen('授权管理', '查看和管理你与应用之间的授权关系');
           <?php foreach (explode(',', $z['scopes']) as $s): ?><span style="margin-right:4px;"><?= $scopeLabels[$s] ?? $s ?></span><?php endforeach; ?>
         </span>
         <?php if ($active): ?>
+        <mdui-button slot="end-icon" variant="text" icon="edit--outlined" onclick="location.href='auth-edit.php?id=<?= (int)$z['id'] ?>'">权限</mdui-button>
         <form slot="end-icon" method="POST" style="display:inline;" onsubmit="return confirm('确定撤回对「<?= htmlspecialchars($z['app_name']) ?>」的授权吗？');">
           <input type="hidden" name="action" value="revoke">
           <input type="hidden" name="authorization_id" value="<?= (int)$z['id'] ?>">
