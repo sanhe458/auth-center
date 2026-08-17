@@ -306,7 +306,8 @@ function issueTokens(array $app, int $userId, string $scope): void
         'user_id' => $userId, 'uid' => $u['uid'], 'app_id' => $app['id'], 'scope' => $scope,
     ]));
 
-    ok([
+    // token 端点按 OAuth 2.0 标准返回顶层字段（不做 code/data 包装）
+    jsonOut([
         'access_token'  => $access,
         'token_type'    => 'Bearer',
         'expires_in'    => ACCESS_TOKEN_TTL,

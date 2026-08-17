@@ -157,10 +157,16 @@ class AuthCenter
         if (!is_array($data)) {
             throw new RuntimeException('响应解析失败 (HTTP ' . $code . ')');
         }
-        if (($data['code'] ?? 1) !== 0) {
-            throw new RuntimeException('Auth Center 错误 [' . $data['code'] . ']: ' . ($data['message'] ?? '未知错误'));
+        // 兼容两种响应格式：
+        // 1) Auth Center 统一包装 {code, message, data}
+        // 2) OAuth 标准 token 响应（顶层 access_token，无 code 字段）
+        if (array_key_exists('code', $data)) {
+            if (($data['code'] ?? 1) !== 0) {
+                throw new RuntimeException('Auth Center 错误 [' . $data['code'] . ']: ' . ($data['message'] ?? '未知错误'));
+            }
+            return $data['data'] ?? [];
         }
-        return $data['data'] ?? [];
+        return $data;
     }
 }
 
