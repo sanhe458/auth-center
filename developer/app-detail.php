@@ -157,57 +157,19 @@ devSidebar('devapps');
   const input = document.getElementById('icon-input');
   const status = document.getElementById('icon-status');
   const avatar = document.getElementById('h-avatar');
-  const MAX_BYTES = 2 * 1024 * 1024; // 2MB
-  const MAX_DIM = 256;
-
-  function compressImage(file) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        let { width, height } = img;
-        const scale = Math.min(1, MAX_DIM / Math.max(width, height));
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        const qualities = [0.85, 0.7, 0.6, 0.5, 0.45];
-        let i = 0;
-        const tryNext = () => {
-          if (i >= qualities.length) {
-            canvas.toBlob(blob => blob ? resolve({ blob, quality: qualities[i-1] }) : reject(new Error('压缩失败')), 'image/jpeg', qualities[i-1]); return;
-          }
-          canvas.toBlob(blob => {
-            if (!blob) return reject(new Error('压缩失败'));
-            if (blob.size <= MAX_BYTES) resolve({ blob, quality: qualities[i] });
-            else { i++; tryNext(); }
-          }, 'image/jpeg', qualities[i]);
-        };
-        tryNext();
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片解析失败')); };
-      img.src = url;
-    });
-  }
 
   input.addEventListener('change', async () => {
     const file = input.files[0];
     if (!file) return;
     const ok = /^image\/(jpeg|png|gif|webp)$/.test(file.type);
     if (!ok) { status.textContent = '格式不支持，仅 JPG/PNG/GIF/WebP'; return; }
-    let selected = file;
-    if (file.size > MAX_BYTES && file.type !== 'image/gif') {
-      status.textContent = '图片超过 2MB，正在压缩…';
-      try {
-        const { blob } = await compressImage(file);
-        selected = new File([blob], 'icon.' + (blob.type === 'image/png' ? 'png' : 'jpg'), { type: blob.type });
-      } catch (e) { status.textContent = '压缩失败：' + e.message; return; }
-    } else if (file.size > MAX_BYTES) {
-      status.textContent = 'GIF 超过 2MB，请换图';
+    status.textContent = '正在打开裁切…';
+    let selected;
+    try {
+      selected = await window.AvatarCrop.open(file);
+    } catch (err) {
+      status.textContent = (err && err.message === 'cancelled') ? '已取消裁切' : '裁切失败：' + (err && err.message);
+      input.value = '';
       return;
     }
     status.textContent = '上传中…';
@@ -229,4 +191,4 @@ devSidebar('devapps');
 </script>
 <?php
 echo '</div>';
-pageFoot(); ?>
+pageFoot('<script src="/js/avatar-crop.js"></script>'); ?>
