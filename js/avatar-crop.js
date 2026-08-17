@@ -81,6 +81,32 @@ window.AvatarCrop = (function () {
   function onPointerDown(e) {
     e.preventDefault();
     const isTouch = e.type === 'touchstart';
+    // 双指：进入捏合模式
+    if (isTouch && e.touches.length >= 2) {
+      const t1 = e.touches[0], t2 = e.touches[1];
+      const startDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const startScale = scale;
+      function pinchMove(ev) {
+        ev.preventDefault();
+        if (ev.touches.length < 2) return;
+        const a = ev.touches[0], b = ev.touches[1];
+        const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+        if (startDist > 0) {
+          const ratio = dist / startDist;
+          scale = Math.min(5, Math.max(1, startScale * ratio));
+          applyTransform();
+        }
+      }
+      function pinchEnd() {
+        document.removeEventListener('touchmove', pinchMove);
+        document.removeEventListener('touchend', pinchEnd);
+        document.removeEventListener('touchcancel', pinchEnd);
+      }
+      document.addEventListener('touchmove', pinchMove, { passive: false });
+      document.addEventListener('touchend', pinchEnd);
+      document.addEventListener('touchcancel', pinchEnd);
+      return;
+    }
     const startX = isTouch ? e.touches[0].clientX : e.clientX;
     const startY = isTouch ? e.touches[0].clientY : e.clientY;
     const sx = ox, sy = oy;
