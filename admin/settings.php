@@ -33,6 +33,14 @@ if (($_POST['action'] ?? '') === 'save') {
         }
     }
     // 清理无效 key
+    // 配置已变更，递增版本号使 Redis 缓存失效
+    try {
+        if (function_exists('redis') && function_exists('rk')) {
+            redis()->incr(rk('cfg:ver'));
+        }
+    } catch (Throwable $e) {
+        // Redis 不可用不影响保存
+    }
     header('Location: settings.php?msg=saved');
     exit;
 }

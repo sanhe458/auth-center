@@ -92,20 +92,55 @@ function ts(?string $dt): ?int
 
 /** 系统配置读取（后台可配，来自 settings 表）
  *  用法：cfg('github_client_id')；无 DB 时回退到常量/默认值
+ *
+ *  缓存：优先 Redis（ac:cfg 全表 + ac:cfg:ver 版本号），
+ *        避免每次请求全表查 DB；后台保存配置时递增版本号失效缓存。
  */
 function cfg(string $key, $default = null)
 {
     static $cache = null;
     if ($cache === null) {
         $cache = [];
+        // Redis 缓存优先（若 redis.php 已加载）
+        try {
+            if (function_exists('redis') && function_exists('rk')) {
+                $ver = redis()->get(rk('cfg:ver'));
+                $cached = ($ver !== false) ? redis()->get(rk('cfg:' . $ver)) : false;
+                if ($cached !== false) {
+                    $data = json_decode((string)$cached, true);
+                    if (is_array($data)) {
+                        $cache = $data;
+                        return cfgLookup($key, $default, $cache);
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            // Redis 不可用降级到 DB
+        }
+        // 回源 DB
         try {
             foreach (db()->query('SELECT skey, svalue FROM settings') as $row) {
                 $cache[$row['skey']] = $row['svalue'];
+            }
+            // 写回 Redis
+            try {
+                if (function_exists('redis') && function_exists('rk')) {
+                    $ver = redis()->incr(rk('cfg:ver'));
+                    redis()->setex(rk('cfg:' . $ver), 3600, json_encode($cache));
+                }
+            } catch (Throwable $e) {
+                // 缓存写失败不影响本次读取
             }
         } catch (Throwable $e) {
             // DB 不可用时静默，靠常量回退
         }
     }
+    return cfgLookup($key, $default, $cache);
+}
+
+/** cfg() 内部：从缓存数组取值，回退到常量/默认值 */
+function cfgLookup(string $key, $default, array $cache)
+{
     if (array_key_exists($key, $cache) && $cache[$key] !== null && $cache[$key] !== '') {
         return $cache[$key];
     }

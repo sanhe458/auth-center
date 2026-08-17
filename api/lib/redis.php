@@ -20,17 +20,15 @@ function rk(string $key): string
     return REDIS_PREFIX . $key;
 }
 
-/** 限流：滑动窗口，返回是否放行 */
+/** 限流：固定窗口计数（INCR + EXPIRE），返回是否放行 */
 function rateLimit(string $bucket, int $max, int $windowSec): bool
 {
     $r = redis();
     $key = rk('rl:' . $bucket);
-    $now = time();
-    $pipe = $r->multi(Redis::PIPELINE);
-    $pipe->zRemRangeByScore($key, 0, $now - $windowSec);
-    $pipe->zAdd($key, $now, uniqid('', true));
-    $pipe->zCard($key);
-    $pipe->expire($key, $windowSec);
-    $res = $pipe->exec();
-    return ($res[2] ?? 0) <= $max;
+    $c = $r->incr($key);
+    if ($c === 1) {
+        // 首次计数，设置窗口过期
+        $r->expire($key, $windowSec);
+    }
+    return $c <= $max;
 }
