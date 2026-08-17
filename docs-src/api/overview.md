@@ -79,6 +79,15 @@ https://<AUTH_SERVER>/api
 | `/api/authorizations/list` | GET | 授权列表 |
 | `/api/authorizations/revoke` | POST | 撤回授权 |
 
+### 通知（应用发邮件）
+
+应用给用户发邮件（需要 `notify` 权限，详见[通知接口](/api/notify)）。
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/notify/send` | POST | 群发：给所有已授权 `notify` 权限的用户发邮件 |
+| `/api/notify/send_to_user` | POST | 定向：给指定用户发邮件（需该用户已授权 `notify`） |
+
 ### 其他
 
 | 接口 | 方法 | 说明 |
@@ -94,5 +103,7 @@ https://<AUTH_SERVER>/api
 | `/api/oauth/token` | 每 IP 每分钟 30 次 |
 | `/api/user/login` | 每 IP 每分钟 20 次 |
 | `/api/user/register` | 每 IP 每小时 10 次 |
+| `/api/notify/send` | 每应用每分钟 10 次 |
+| `/api/notify/send_to_user` | 每应用每分钟 10 次 |
 
 超出返回 `429`，`code` 为 `40010`。
