@@ -6,7 +6,7 @@ Auth Center 内置一套**易支付（彩虹易支付 V1）兼容的收款能力
 
 ## 一、申请商户
 
-在 [Auth Center 控制台 → 商户管理](https://auth.sanhe.com.mp/admin/merchants.php) 创建一个商户，会得到：
+在开发者控制台打开你的应用（如 [SDK演示站](https://auth.sanhe.com.mp/developer/apps.php)），在「易支付收款」区块点 **开通收款商户**，即可获得：
 
 - **商户ID（pid）**：数字，如 `352888`
 - **MD5密钥（key）**：32 位字符串，明文可复制

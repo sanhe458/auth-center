@@ -6,6 +6,7 @@ require_once __DIR__ . '/../api/lib/db.php';
 require_once __DIR__ . '/../api/lib/helpers.php';
 require_once __DIR__ . '/../api/lib/page.php';
 require_once __DIR__ . '/../api/lib/scopes.php';
+require_once __DIR__ . '/../api/lib/pay.php'; // genPid / genPayKey
 
 $user = requireLoginPage();
 $db = db();
@@ -83,6 +84,25 @@ if (($_POST['action'] ?? '') === 'save') {
         $st->execute([$app['id']]);
         $app = $st->fetch();
         $appScopes = $scopes;
+    }
+}
+
+// 开通易支付收款商户（POST）
+if (($_POST['action'] ?? '') === 'open_merchant') {
+    if (!$merchant) {
+        try {
+            $pid = genPid();
+            $key = genPayKey();
+            $db->prepare('INSERT INTO pay_merchants (pid, name, key_plain, owner_id, app_id) VALUES (?,?,?,?,?)')
+                ->execute([$pid, $app['name'], $key, $app['owner_id'], $app['id']]);
+            $msg = '易支付收款商户已开通，商户ID与密钥见下方';
+            // 刷新商户
+            $st = $db->prepare('SELECT * FROM pay_merchants WHERE app_id = ? LIMIT 1');
+            $st->execute([$app['id']]);
+            $merchant = $st->fetch() ?: null;
+        } catch (Throwable $e) {
+            $err = '开通失败：' . $e->getMessage();
+        }
     }
 }
 
@@ -220,9 +240,13 @@ devSidebar('devapps');
     <?php else: ?>
     <mdui-card class="form-card" variant="elevated">
       <div class="sec-title" style="margin:0 0 8px;">易支付收款</div>
-      <div style="font-size:13px; opacity:.7; line-height:1.7;">
+      <div style="font-size:13px; opacity:.7; line-height:1.7; margin-bottom:14px;">
         该应用还未开通易支付收款商户。开通后可获得商户ID(pid)和MD5密钥，任何支持易支付的系统都能零改动接入。
       </div>
+      <form method="POST">
+        <input type="hidden" name="action" value="open_merchant">
+        <mdui-button variant="filled" icon="storefront--outlined" type="submit">开通收款商户</mdui-button>
+      </form>
     </mdui-card>
     <?php endif; ?>
 
