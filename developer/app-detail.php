@@ -24,6 +24,12 @@ $st = $db->prepare('SELECT scope FROM app_scopes WHERE app_id = ?');
 $st->execute([$app['id']]);
 $appScopes = array_column($st->fetchAll(), 'scope');
 
+// 易支付收款商户（一个应用最多关联一个商户）
+$merchant = null;
+$st = $db->prepare('SELECT * FROM pay_merchants WHERE app_id = ? AND owner_id = ? LIMIT 1');
+$st->execute([$app['id'], $app['owner_id']]);
+$merchant = $st->fetch() ?: null;
+
 $msg = '';
 $err = '';
 
@@ -191,6 +197,34 @@ devSidebar('devapps');
         <mdui-button variant="tonal" color="error" icon="refresh--outlined" type="submit">重置 client_secret</mdui-button>
       </mdui-card>
     </form>
+
+    <!-- 易支付收款（商户信息） -->
+    <?php if ($merchant): ?>
+    <mdui-card class="form-card" variant="elevated">
+      <div class="sec-title" style="margin:0 0 16px;">易支付收款</div>
+      <div style="font-size:12.5px; opacity:.65; margin-bottom:14px; line-height:1.7;">
+        对接地址 <code style="user-select:all;">https://auth.sanhe.com.mp/mapi.php</code>（API下单）或
+        <code style="user-select:all;">submit.php</code>（页面跳转），填入下方商户ID和密钥即可，协议与彩虹易支付 V1 完全兼容。
+      </div>
+      <div class="form-field">
+        <mdui-text-field readonly label="商户ID (pid)" icon="storefront--outlined" value="<?= htmlspecialchars($merchant['pid']) ?>" full-width></mdui-text-field>
+      </div>
+      <div class="form-field">
+        <mdui-text-field readonly label="MD5 密钥 (key)" icon="key--outlined" value="<?= htmlspecialchars($merchant['key_plain']) ?>" full-width></mdui-text-field>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; opacity:.6;">收款进你的应用余额，D+1 后可提现。</div>
+        <mdui-button variant="tonal" icon="open_in_new--outlined" onclick="location.href='/developer/app-balance.php'">查看应用余额</mdui-button>
+      </div>
+    </mdui-card>
+    <?php else: ?>
+    <mdui-card class="form-card" variant="elevated">
+      <div class="sec-title" style="margin:0 0 8px;">易支付收款</div>
+      <div style="font-size:13px; opacity:.7; line-height:1.7;">
+        该应用还未开通易支付收款商户。开通后可获得商户ID(pid)和MD5密钥，任何支持易支付的系统都能零改动接入。
+      </div>
+    </mdui-card>
+    <?php endif; ?>
 
     <!-- 危险区 -->
     <div class="danger-zone">
