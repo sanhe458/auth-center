@@ -19,6 +19,7 @@ require_once __DIR__ . '/controllers/gitee.php';
 require_once __DIR__ . '/controllers/notify.php';
 require_once __DIR__ . '/controllers/pay.php';
 require_once __DIR__ . '/controllers/app_balance.php';
+require_once __DIR__ . '/controllers/image.php';
 
 // CORS：仅允许白名单域名（反射任意 Origin + credentials 是漏洞）
 $allowedOrigins = ['https://auth.sanhe.com.mp', 'https://demo.sanhe.com.mp'];
@@ -149,6 +150,19 @@ try {
                 case 'withdraw': appBalanceWithdrawApi(); break;
                 case 'settle':   appBalanceSettleApi(); break;
                 default: fail(40000, '未知应用余额操作', 404);
+            }
+            break;
+
+        // 图床
+        case 'image':
+            switch ($action) {
+                case 'upload':          imageUpload(); break;
+                case 'upload_app':      imageUploadApp(); break;
+                case 'list':            imageList(); break;
+                case 'status':          imageStatus(); break;
+                case 'unlock_prepare':  imageUnlockPrepare(); break;
+                case 'unlock_confirm':  imageUnlockConfirm(); break;
+                default: fail(40000, '未知图床操作', 404);
             }
             break;
 

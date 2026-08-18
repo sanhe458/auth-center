@@ -19,6 +19,7 @@ function scopeDefs(): array
     return [
         'basic'  => ['查看基本信息', '头像、昵称、用户 ID，用于展示登录状态（默认必选）'],
         'notify' => ['发送通知', '向用户设备推送登录与安全提醒'],
+        'image'  => ['图床上传', '代为上传图片到用户图床（需经用户授权）'],
     ];
 }
 
@@ -31,6 +32,7 @@ function scopeLabels(): array
     return [
         'basic'  => '基本信息',
         'notify' => '通知',
+        'image'  => '图床',
     ];
 }
 
