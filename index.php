@@ -62,7 +62,7 @@ pageHead('统一身份认证');
   </div>
 
   <div style="margin-top:14px;">
-    <mdui-button variant="text" icon="open_in_new--outlined" onclick="location.href='/docs/api/overview.html'" style="font-size:13px;">开发者 API 文档</mdui-button>
+    <mdui-button variant="text" icon="open_in_new--outlined" onclick="location.href='/docs/'" style="font-size:13px;">开发者 API 文档</mdui-button>
   </div>
 </div>
 
