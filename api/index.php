@@ -17,6 +17,7 @@ require_once __DIR__ . '/controllers/github.php';
 require_once __DIR__ . '/controllers/rainbow.php';
 require_once __DIR__ . '/controllers/gitee.php';
 require_once __DIR__ . '/controllers/notify.php';
+require_once __DIR__ . '/controllers/pay.php';
 
 // CORS：仅允许白名单域名（反射任意 Origin + credentials 是漏洞）
 $allowedOrigins = ['https://auth.sanhe.com.mp', 'https://demo.sanhe.com.mp'];
@@ -128,6 +129,15 @@ try {
                 case 'send':          notifySend(); break;
                 case 'send_to_user':  notifySendToUser(); break;
                 default: fail(40000, '未知通知操作', 404);
+            }
+            break;
+
+        // 易支付收款（统一支付页）
+        case 'pay':
+            switch ($action) {
+                case 'pay':     payPay(); break;
+                case 'status':  payStatus(); break;
+                default: fail(40000, '未知支付操作', 404);
             }
             break;
 

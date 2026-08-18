@@ -63,6 +63,7 @@ function adminSidebar(string $active): void
         'auths'     => ['授权管理', 'verified_user--outlined', 'auths.php'],
         'tokens'    => ['令牌管理', 'vpn_key--outlined', 'tokens.php'],
         'cards'     => ['充值卡密', 'card_membership--outlined', 'cards.php'],
+        'merchants' => ['商户管理', 'storefront--outlined', 'merchants.php'],
         'settings'  => ['系统设置', 'settings--outlined', 'settings.php'],
     ];
     echo '<div class="sidebar">';
