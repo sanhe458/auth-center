@@ -55,6 +55,7 @@ export default defineConfig({
             { text: '接口总览', link: '/api/overview' },
             { text: '认证接口', link: '/api/auth' },
             { text: '通知接口', link: '/api/notify' },
+            { text: '图床接口', link: '/api/image' },
             { text: '错误码', link: '/api/errors' },
           ],
         },
