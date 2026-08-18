@@ -84,3 +84,72 @@ html, body { overflow-x: hidden; }
   .sidebar .nav-item .ic { font-size: 16px; }
   .content { padding: 16px 12px; }
 }
+
+/* ========== 应用详情页（app-detail） ========== */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--mdui-color-on-surface-variant, rgb(var(--mdui-color-on-surface-variant)));
+  cursor: pointer; margin-bottom: 16px; padding: 6px 10px; border-radius: 10px;
+  transition: background .2s, color .2s;
+}
+.back-btn:hover { background: rgb(var(--mdui-color-surface-container-high)); color: rgb(var(--mdui-color-on-surface)); }
+
+/* 应用信息头部 */
+.app-head {
+  display: flex; align-items: center; gap: 18px;
+  padding: 22px 24px; border-radius: 18px; margin-bottom: 20px;
+}
+.app-head .info { flex: 1; min-width: 0; }
+.app-head .nm { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.app-head .desc { font-size: 13px; opacity: .65; margin-top: 6px; line-height: 1.5; }
+.app-head .cid {
+  font-family: ui-monospace, monospace; font-size: 12px; opacity: .75;
+  margin-top: 10px; padding: 6px 10px; border-radius: 8px;
+  background: rgb(var(--mdui-color-surface-container)); word-break: break-all;
+}
+
+/* 表单卡片 */
+.form-card { padding: 22px 24px; border-radius: 18px; margin-bottom: 20px; }
+.form-card .sec-title { margin: 0 0 16px !important; }
+.form-field { margin-bottom: 16px; }
+
+/* 创建/更新时间 */
+.meta-row { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 6px; }
+.meta-row .m { font-size: 12.5px; opacity: .65; }
+.meta-row .m b { display: block; font-weight: 600; color: rgb(var(--mdui-color-on-surface)); margin-top: 3px; }
+
+/* 权限范围勾选项 */
+.scope-check {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 14px; margin-bottom: 10px;
+  background: rgb(var(--mdui-color-surface-container)); cursor: pointer;
+  transition: background .2s;
+}
+.scope-check:hover { background: rgb(var(--mdui-color-surface-container-high)); }
+.scope-check .txt { flex: 1; min-width: 0; }
+.scope-check .t { font-size: 15px; font-weight: 600; }
+.scope-check .d { font-size: 12.5px; opacity: .6; margin-top: 4px; line-height: 1.5; }
+
+/* 表单底部操作 */
+.actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  margin: 8px 0 24px; padding-top: 18px; border-top: 1px solid rgba(128,128,128,.1);
+}
+.actions mdui-button { padding: 0 6px; }
+
+/* 回调提示 */
+.callback-hint { font-size: 12px; opacity: .6; margin-top: 6px; line-height: 1.6; }
+
+/* 危险区 */
+.danger-zone {
+  border: 1px solid rgba(255,110,110,.35); border-radius: 18px;
+  padding: 20px 24px; margin-top: 8px; background: rgba(255,80,80,.04);
+}
+.danger-zone .dz-t {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 700; color: rgb(var(--mdui-color-error, 211,47,47));
+}
+.danger-zone .dz-d { font-size: 13px; opacity: .7; margin: 8px 0 14px; line-height: 1.6; }
+
+/* 重置密钥提示区 */
+.secret-flash { font-size: 12.5px; opacity: .7; margin-bottom: 10px; line-height: 1.6; }
