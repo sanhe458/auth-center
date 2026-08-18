@@ -32,6 +32,16 @@ if ($me) {
 
 $statusLabel = [0 => '待支付', 1 => '已支付', 2 => '已关闭'];
 
+/** 拼易支付标准同步跳转参数 */
+function buildReturnUrlPhp(?array $o): string {
+    if (!$o || empty($o['return_url'])) return '';
+    $sep = str_contains($o['return_url'], '?') ? '&' : '?';
+    return $o['return_url'] . $sep
+        . 'out_trade_no=' . urlencode((string)$o['out_trade_no'])
+        . '&trade_no=' . urlencode((string)$o['trade_no'])
+        . '&trade_status=TRADE_SUCCESS';
+}
+
 pageHead('收银台');
 echo '<style>
 .pay-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:24px;background:linear-gradient(160deg,#f4f0ff,#eef2ff);}
@@ -92,7 +102,7 @@ echo '<style>
 <?php if ($order && (int)$order['status'] === 0 && $me && $balanceFen >= (int)$order['amount_fen']): ?>
 <script>
 const ORDER_NO = <?= json_encode($order['trade_no']) ?>;
-const RETURN_URL = <?= json_encode($order['return_url']) ?>;
+const PAID_RETURN_URL = <?= json_encode($order ? buildReturnUrlPhp($order) : '') ?>;
 
 document.getElementById('btnPay').addEventListener('click', async () => {
   const btn = document.getElementById('btnPay');
@@ -108,9 +118,9 @@ document.getElementById('btnPay').addEventListener('click', async () => {
     if (r.ok && d.success) {
       btn.textContent = '✅ 支付成功';
       done = true;
-      // 触发通知商户 + 跳转
+      // 触发通知商户 + 跳转（带状态参数）
       setTimeout(() => {
-        if (RETURN_URL) location.href = RETURN_URL;
+        if (PAID_RETURN_URL) location.href = PAID_RETURN_URL;
         else location.reload();
       }, 1500);
     } else {
@@ -129,12 +139,12 @@ document.getElementById('btnPay').addEventListener('click', async () => {
 <?php endif; ?>
 
 <script>
-// 已支付页：返回商户
+// 已支付页：返回商户（带同步结果参数）
 const btnDone = document.getElementById('btnDone');
 if (btnDone) {
+  const paidRet = <?= json_encode($order && (int)$order['status'] === 1 ? buildReturnUrlPhp($order) : '') ?>;
   btnDone.addEventListener('click', () => {
-    const ret = <?= json_encode($order['return_url'] ?? '') ?>;
-    if (ret) location.href = ret; else location.href = '/';
+    if (paidRet) location.href = paidRet; else location.href = '/';
   });
 }
 </script>
