@@ -68,13 +68,21 @@ function oauthAuthorize(): void
         exit;
     }
 
-    // 已登录：检查是否已授权该应用 → 是则直接发码
-    $auth = db()->prepare('SELECT id FROM authorizations WHERE user_id = ? AND app_id = ? AND status = 1 LIMIT 1');
+    // 已登录：检查是否已授权该应用 → 已授权且权限覆盖当前请求则直接发码
+    $requestedArr = array_values(array_unique(array_map('trim', $requested)));
+    $auth = db()->prepare('SELECT scopes FROM authorizations WHERE user_id = ? AND app_id = ? AND status = 1 LIMIT 1');
     $auth->execute([$userId, $app['id']]);
-    if ($auth->fetch()) {
-        $code = issueAuthCode($userId, $app, $redirectUri, implode(',', $requested), $state);
-        header('Location: ' . $redirectUri . (strpos($redirectUri, '?') !== false ? '&' : '?') . 'code=' . urlencode($code) . ($state ? '&state=' . urlencode($state) : ''));
-        exit;
+    $authRow = $auth->fetch();
+    if ($authRow) {
+        $granted = array_values(array_unique(array_filter(array_map('trim', explode(',', $authRow['scopes'])))));
+        // 已授权权限必须覆盖当前应用申请的权限，才可无感直过
+        $covered = count(array_diff($requestedArr, $granted)) === 0;
+        if ($covered) {
+            $code = issueAuthCode($userId, $app, $redirectUri, implode(',', $requested), $state);
+            header('Location: ' . $redirectUri . (strpos($redirectUri, '?') !== false ? '&' : '?') . 'code=' . urlencode($code) . ($state ? '&state=' . urlencode($state) : ''));
+            exit;
+        }
+        // 应用有新增权限（不在已授权范围内）→ 不直过，落到授权页重新征得同意
     }
 
     // 未授权 → 展示授权确认页（HTML）
