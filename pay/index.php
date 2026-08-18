@@ -23,6 +23,16 @@ if ($tradeNo) {
     $order = $st->fetch() ?: null;
 }
 
+// 商家名称：订单 pid → 商户 → 关联应用 → 应用名
+$merchantName = '';
+if ($order && !empty($order['pid'])) {
+    $st = db()->prepare(
+        'SELECT a.name FROM pay_merchants m LEFT JOIN apps a ON a.id = m.app_id WHERE m.pid = ? LIMIT 1'
+    );
+    $st->execute([$order['pid']]);
+    $merchantName = (string)$st->fetchColumn();
+}
+
 $balanceFen = 0;
 if ($me) {
     $st = db()->prepare('SELECT balance FROM users WHERE id = ?');
@@ -78,7 +88,7 @@ echo '<style>
       <div class="amount">¥ <?= number_format($order['amount_fen'] / 100, 2) ?></div>
       <div class="row"><span class="k">商品</span><span class="v"><?= htmlspecialchars($order['name'] ?: '-') ?></span></div>
       <div class="row"><span class="k">订单号</span><span class="v"><?= htmlspecialchars($order['trade_no']) ?></span></div>
-      <div class="row"><span class="k">商家</span><span class="v"><?= htmlspecialchars($order['pid']) ?></span></div>
+      <div class="row"><span class="k">商家</span><span class="v"><?= htmlspecialchars($merchantName ?: $order['pid']) ?></span></div>
 
       <?php if (!$me): ?>
         <div class="login-box">
@@ -93,7 +103,7 @@ echo '<style>
       <?php else: ?>
         <div class="bal">账户余额 <b>¥ <?= number_format($balanceFen / 100, 2) ?></b></div>
         <mdui-button class="btn" variant="filled" icon="lock--outlined" id="btnPay">确认支付 ¥ <?= number_format($order['amount_fen'] / 100, 2) ?></mdui-button>
-        <div class="hint">确认后将从您的余额扣除该笔金额并支付给「<?= htmlspecialchars($order['pid']) ?>」。</div>
+        <div class="hint">确认后将从您的余额扣除该笔金额并支付给「<?= htmlspecialchars($merchantName ?: $order['pid']) ?>」。</div>
       <?php endif; ?>
     <?php endif; ?>
   </div>
