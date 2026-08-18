@@ -41,6 +41,7 @@ export default defineConfig({
             { text: '简介', link: '/guide/intro' },
             { text: '快速对接（3 步）', link: '/guide/quickstart' },
             { text: 'OAuth 授权码流程', link: '/guide/oauth-flow' },
+            { text: '认证架构', link: '/guide/auth-architecture' },
             { text: '对接示例代码', link: '/guide/examples' },
             { text: '示例 SDK', link: '/guide/sdks' },
             { text: '应用与密钥管理', link: '/guide/apps-keys' },
