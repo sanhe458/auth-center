@@ -158,6 +158,7 @@ try {
             switch ($action) {
                 case 'upload':          imageUpload(); break;
                 case 'upload_app':      imageUploadApp(); break;
+                case 'upload_user':     imageUploadUser(); break;
                 case 'list':            imageList(); break;
                 case 'status':          imageStatus(); break;
                 case 'unlock_prepare':  imageUnlockPrepare(); break;

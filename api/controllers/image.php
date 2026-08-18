@@ -14,6 +14,7 @@
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/image_host.php';
+require_once __DIR__ . '/resource.php'; // requireToken（Bearer token 校验）
 
 /** 开发者上传频率限制（每应用每分钟） */
 const IMAGE_RATE_MAX = 60;
@@ -111,6 +112,21 @@ function imageUploadApp(): void
 {
     $app = imageAuthApp();
     imageDoUpload((int)$app['owner_id'], (int)$app['id']);
+}
+
+/**
+ * POST /api/image/upload_user 开发者替终端用户上传（OAuth Bearer token）
+ * 用用户的 access_token，上传到该用户自己的图床，记到用户名下。
+ * 需该 token 已授权 image（图床）权限。
+ */
+function imageUploadUser(): void
+{
+    $ctx = requireToken();
+    $scopes = array_filter(array_map('trim', explode(',', $ctx['scope'])));
+    if (!in_array('image', $scopes, true)) {
+        fail(44020, '当前授权缺少 image（图床）权限，请重新授权', 403);
+    }
+    imageDoUpload((int)$ctx['user_id'], (int)$ctx['app_id']);
 }
 
 /** GET /api/image/list 我的图片列表 */
