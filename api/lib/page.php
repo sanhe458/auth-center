@@ -129,7 +129,6 @@ function pageSidebar(string $active): void
         'index'    => ['总览', 'dashboard--outlined', 'index.php'],
         'auth'     => ['授权管理', 'verified_user--outlined', 'auth.php'],
         'wallet'   => ['我的余额', 'account_balance_wallet--outlined', 'wallet.php'],
-        'appbal'   => ['应用余额', 'savings--outlined', 'app-balance.php'],
         'bindings' => ['绑定渠道', 'link--outlined', 'bindings.php'],
         'profile'  => ['个人设置', 'person--outlined', 'profile.php'],
     ];
@@ -171,6 +170,7 @@ function devSidebar(string $active): void
         'devapps'  => ['我的应用', 'apps--outlined', 'apps.php'],
         'devauths' => ['收到的授权', 'verified_user--outlined', 'auths.php'],
         'devkeys'  => ['API 密钥', 'key--outlined', 'keys.php'],
+        'devbal'   => ['应用余额', 'savings--outlined', 'app-balance.php'],
     ];
     echo '<div class="sidebar">';
     foreach ($items as $k => [$label, $icon, $href]) {

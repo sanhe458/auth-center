@@ -22,7 +22,7 @@ $typeLabel = [
 pageHead('应用余额', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
-pageSidebar('appbal');
+devSidebar('devbal');
 contentOpen('应用余额', '所有应用收款汇总 · D+1 结算后可提现');
 ?>
     <!-- 余额卡片 -->
