@@ -32,7 +32,7 @@
 ### 示例
 
 ```bash
-curl -X POST https://<AUTH_SERVER>/api/notify/send \
+curl -X POST https://auth.sanhe.com.mp/api/notify/send \
   -d "client_id=你的client_id" \
   -d "client_secret=你的client_secret" \
   -d "title=系统维护通知" \
@@ -74,7 +74,7 @@ curl -X POST https://<AUTH_SERVER>/api/notify/send \
 用公开 uid 定向发送：
 
 ```bash
-curl -X POST https://<AUTH_SERVER>/api/notify/send_to_user \
+curl -X POST https://auth.sanhe.com.mp/api/notify/send_to_user \
   -d "client_id=你的client_id" \
   -d "client_secret=你的client_secret" \
   -d "user_id=u_admin001" \

@@ -30,7 +30,7 @@ export default defineConfig({
     nav: [
       { text: '对接指南', link: '/guide/quickstart' },
       { text: 'API 参考', link: '/api/overview' },
-      { text: '控制台', link: 'https://<AUTH_SERVER>/' },
+      { text: '控制台', link: 'https://auth.sanhe.com.mp/' },
     ],
     sidebar: {
       '/guide/': [
@@ -44,6 +44,7 @@ export default defineConfig({
             { text: '对接示例代码', link: '/guide/examples' },
             { text: '示例 SDK', link: '/guide/sdks' },
             { text: '应用与密钥管理', link: '/guide/apps-keys' },
+            { text: '余额支付（易支付兼容）', link: '/guide/payment' },
           ],
         },
       ],
