@@ -18,6 +18,7 @@ require_once __DIR__ . '/controllers/rainbow.php';
 require_once __DIR__ . '/controllers/gitee.php';
 require_once __DIR__ . '/controllers/notify.php';
 require_once __DIR__ . '/controllers/pay.php';
+require_once __DIR__ . '/controllers/app_balance.php';
 
 // CORS：仅允许白名单域名（反射任意 Origin + credentials 是漏洞）
 $allowedOrigins = ['https://auth.sanhe.com.mp', 'https://demo.sanhe.com.mp'];
@@ -138,6 +139,16 @@ try {
                 case 'pay':     payPay(); break;
                 case 'status':  payStatus(); break;
                 default: fail(40000, '未知支付操作', 404);
+            }
+            break;
+
+        // 应用余额（D+1）
+        case 'app_balance':
+            switch ($action) {
+                case 'info':     appBalanceInfoApi(); break;
+                case 'withdraw': appBalanceWithdrawApi(); break;
+                case 'settle':   appBalanceSettleApi(); break;
+                default: fail(40000, '未知应用余额操作', 404);
             }
             break;
 

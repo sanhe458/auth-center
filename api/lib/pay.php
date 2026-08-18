@@ -13,6 +13,7 @@
 
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/helpers.php';
+require_once __DIR__ . '/app_balance.php'; // 应用余额系统
 require_once __DIR__ . '/../controllers/balance.php'; // 复用 balanceChangeInTxn（用户余额增减）
 
 /* ============================================================
@@ -52,6 +53,16 @@ function payMerchant(string $pid): ?array
     $st->execute([$pid]);
     $m = $st->fetch();
     return $m ?: null;
+}
+
+/** 按 pid 查商户归属用户 id */
+function payMerchantOwner(string $pid): ?int
+{
+    $st = db()->prepare('SELECT owner_id FROM pay_merchants WHERE pid = ? LIMIT 1');
+    $st->execute([$pid]);
+    $row = $st->fetch();
+    $owner = $row ? (int)($row['owner_id'] ?? 0) : 0;
+    return $owner ?: null;
 }
 
 /** 生成易支付风格商户号（数字，从 10001 起，避免暴露自增 id） */
@@ -190,27 +201,36 @@ function payOrderPay(int $payerUserId, string $tradeNo): array
             $db->rollBack();
             $o = $order;
             $afterPayer = null;
-            $afterMerchant = null;
+            $afterPending = null;
             // 查付款人的余额
             $st = $db->prepare('SELECT balance FROM users WHERE id = ?');
             $st->execute([$payerUserId]);
             $afterPayer = (int)($st->fetch()['balance'] ?? 0);
-            // 查商户余额
-            $st = $db->prepare('SELECT balance FROM pay_merchants WHERE pid = ?');
-            $st->execute([$order['pid']]);
-            $afterMerchant = (int)($st->fetch()['balance'] ?? 0);
-            return [$o, $afterPayer, $afterMerchant];
+            // 查商户归属用户的应用余额·不可提现
+            $ownerId = payMerchantOwner((string)$order['pid']);
+            if ($ownerId) {
+                $acc = appBalanceGet($ownerId);
+                $afterPending = (int)($acc['pending'] ?? 0);
+            } else {
+                $afterPending = 0;
+            }
+            return [$o, $afterPayer, $afterPending];
         }
         if ((int)$order['status'] === 2) throw new PayException('订单已关闭');
 
         $amountFen = (int)$order['amount_fen'];
         $pid = $order['pid'];
 
+        // 商户归属用户
+        $ownerId = payMerchantOwner($pid);
+        if (!$ownerId) throw new PayException('商户未绑定归属用户');
+
         // 扣付款人余额（消费）
         $afterPayer = balanceChangeInTxn($payerUserId, 'consume', -$amountFen, $order['out_trade_no'] ?: $tradeNo, '余额支付 ' . ($order['name'] ?: '商户收款'));
 
-        // 商户入账
-        $afterMerchant = merchantBalanceChangeInTxn($pid, 'income', $amountFen, $tradeNo, $payerUserId, '余额收款');
+        // 入账到商户归属用户的应用余额 · 不可提现（D+1）
+        $appRes = appBalanceIncomeInTxn($ownerId, $amountFen, $tradeNo, $order['out_trade_no'] ?: $tradeNo, '余额收款 D+1');
+        $afterPending = (int)$appRes['pending'];
 
         // 标记订单已支付
         $db->prepare("UPDATE pay_orders SET status = 1, pay_user_id = ?, paid_at = NOW() WHERE id = ?")
@@ -223,7 +243,7 @@ function payOrderPay(int $payerUserId, string $tradeNo): array
         $st->execute([$tradeNo]);
         $order = $st->fetch();
 
-        return [$order, $afterPayer, $afterMerchant];
+        return [$order, $afterPayer, $afterPending];
     } catch (Throwable $e) {
         $db->rollBack();
         if ($e instanceof PayException) throw $e;

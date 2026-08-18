@@ -20,7 +20,7 @@ function payPay(): void
     if (!$tradeNo) fail(42101, '缺少订单号', 400);
 
     try {
-        [$order, $afterPayer, $afterMerchant] = payOrderPay((int)$userId, $tradeNo);
+        [$order, $afterPayer, $afterPending] = payOrderPay((int)$userId, $tradeNo);
     } catch (PayException $e) {
         fail(42102, $e->getMessage(), 400);
     }
@@ -36,7 +36,7 @@ function payPay(): void
         'paid'              => true,
         'amount_yuan'       => sprintf('%.2f', $order['amount_fen'] / 100),
         'balance_yuan'      => sprintf('%.2f', $afterPayer / 100),
-        'merchant_income'   => sprintf('%.2f', $afterMerchant / 100),
+        'pending_yuan'      => sprintf('%.2f', $afterPending / 100),
     ]);
 }
 

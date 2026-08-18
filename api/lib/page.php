@@ -129,6 +129,7 @@ function pageSidebar(string $active): void
         'index'    => ['总览', 'dashboard--outlined', 'index.php'],
         'auth'     => ['授权管理', 'verified_user--outlined', 'auth.php'],
         'wallet'   => ['我的余额', 'account_balance_wallet--outlined', 'wallet.php'],
+        'appbal'   => ['应用余额', 'savings--outlined', 'app-balance.php'],
         'bindings' => ['绑定渠道', 'link--outlined', 'bindings.php'],
         'profile'  => ['个人设置', 'person--outlined', 'profile.php'],
     ];
