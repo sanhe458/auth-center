@@ -124,7 +124,7 @@ pageHead('登录');
               <img src="/icons/wechat.png">
             </a>
             <a class="social-btn" href="/api/oauth/rainbow?type=qq" style="--c:12b7f5">
-              <img src="/icons/qq.png">
+              <img src="/icons/qq.png" style="width:20px;height:20px;object-fit:contain">
             </a>
             <a class="social-btn" href="/api/oauth/github" style="--c:24292f">
               <img src="/icons/github.png">
