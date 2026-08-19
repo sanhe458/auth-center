@@ -15,3 +15,6 @@ config.php
 *.log
 .DS_Store
 *.zip
+
+# AJ-Captcha composer vendor（生产已部署全量，仓库只留源码）
+ajcaptcha/vendor/

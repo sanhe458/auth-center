@@ -1,0 +1,30 @@
+/* AJ-Captcha 滑动拼图组件样式（Auth Center 登录/注册用） */
+.captcha-wrap { width: 320px; max-width: 100%; margin: 14px auto 0; user-select: none; }
+.captcha-panel { border: 1px solid rgba(128,128,128,.25); border-radius: 8px; overflow: hidden;
+  background: var(--mdui-color-surface-container-lowest, #fff); }
+.captcha-imgbox { position: relative; width: 310px; height: 155px; overflow: hidden; background:#eee; }
+.captcha-imgbox img.back { position: absolute; left: 0; top: 0; width: 310px; height: 155px; display: block; }
+.captcha-mask { position: absolute; left: 0; top: 0; width: 310px; height: 155px;
+  background: rgba(0,0,0,.45); opacity: 0; transition: opacity .2s; }
+.captcha-mask.on { opacity: 1; }
+.captcha-jigsaw { position: absolute; left: 0; top: 0; display: none; }
+.captcha-bar { position: relative; height: 42px; border-top: 1px solid rgba(128,128,128,.22);
+  background: rgba(128,128,128,.08); }
+.captcha-bar-track { position: absolute; left: 0; top: 0; height: 42px; width: 0px;
+  background: rgba(76,175,80,.35); border-right: 1px solid rgba(76,175,80,.7); }
+.captcha-bar-text { position: absolute; left: 0; top: 0; width: 100%; height: 42px; line-height: 42px;
+  text-align: center; font-size: 13px; color: var(--mdui-color-on-surface-variant, #777); z-index: 2; }
+.captcha-bar-btn { position: absolute; left: 0; top: 0; width: 42px; height: 42px; z-index: 3;
+  background: var(--mdui-color-primary-container, #e8f0fe); border-right: 1px solid rgba(0,0,0,.1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  text-align: center; font-size: 18px; color: var(--mdui-color-primary, #1565c0); }
+.captcha-bar-btn.disabled { opacity: .6; pointer-events: none; }
+.captcha-refresh { position: absolute; right: 8px; top: 6px; z-index: 5; width: 26px; height: 26px;
+  background: rgba(255,255,255,.9); border-radius: 50%; border: 1px solid rgba(0,0,0,.1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+.captcha-msg { position: absolute; left: 0; top: 0; width: 310px; height: 155px; z-index: 6;
+  display: none; align-items: center; justify-content: center; font-size: 15px; color: #fff;
+  background: rgba(0,0,0,.55); }
+.captcha-msg.show { display: flex; }
+.captcha-msg.ok { background: rgba(76,175,80,.75); }
+.captcha-msg.err { background: rgba(229,57,53,.75); }

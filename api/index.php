@@ -20,6 +20,7 @@ require_once __DIR__ . '/controllers/notify.php';
 require_once __DIR__ . '/controllers/pay.php';
 require_once __DIR__ . '/controllers/app_balance.php';
 require_once __DIR__ . '/controllers/image.php';
+require_once __DIR__ . '/controllers/captcha.php';
 
 // CORS：仅允许白名单域名（反射任意 Origin + credentials 是漏洞）
 $allowedOrigins = ['https://auth.sanhe.com.mp', 'https://demo.sanhe.com.mp'];
@@ -164,6 +165,15 @@ try {
                 case 'unlock_prepare':  imageUnlockPrepare(); break;
                 case 'unlock_confirm':  imageUnlockConfirm(); break;
                 default: fail(40000, '未知图床操作', 404);
+            }
+            break;
+
+        // 行为验证码（滑动拼图）
+        case 'captcha':
+            switch ($action) {
+                case 'get':   captchaGet();  break;
+                case 'check': captchaCheck(); break;
+                default: fail(40000, '未知验证码操作', 404);
             }
             break;
 

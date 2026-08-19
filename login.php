@@ -6,6 +6,7 @@ require_once __DIR__ . '/api/lib/db.php';
 require_once __DIR__ . '/api/lib/helpers.php';
 require_once __DIR__ . '/api/lib/redis.php';
 require_once __DIR__ . '/api/lib/page.php';
+require_once __DIR__ . '/ajcaptcha/vendor/autoload.php';
 
 // 已登录 → 直接进控制台（next 安全校验，防 open redirect）
 $me = currentUser();
@@ -28,7 +29,20 @@ $oldEmail = '';
 
 // POST 登录（限流：每 IP 每分钟 20 次）
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!rateLimit('login:' . clientIp(), 20, 60)) {
+    // AJ-Captcha 服务端强校验（防绕过：滑块验证通过才允许登录）
+    $capOk = false;
+    try {
+        $capConfig = require __DIR__ . '/ajcaptcha/src/config.php';
+        $capSvc = new \Fastknife\Service\BlockPuzzleCaptchaService($capConfig);
+        $capSvc->check($_POST['captcha_token'] ?? '', $_POST['captcha_pointJson'] ?? '');
+        $capOk = true;
+    } catch (\Throwable $e) {
+        $capOk = false;
+    }
+    if (!$capOk) {
+        $error = '请先完成滑块验证';
+        $oldEmail = strtolower(trim($_POST['email'] ?? ''));
+    } elseif (!rateLimit('login:' . clientIp(), 20, 60)) {
         $error = '尝试过于频繁，请 1 分钟后再试';
         $oldEmail = strtolower(trim($_POST['email'] ?? ''));
     } else {
@@ -73,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $next = htmlspecialchars($_GET['next'] ?? ($_POST['next'] ?? ''), ENT_QUOTES);
-pageHead('登录');
+pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css">');
 ?>
 <button class="theme-toggle fixed" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
 
@@ -117,6 +131,7 @@ pageHead('登录');
               <mdui-button variant="text" style="font-size:13px;">忘记密码？</mdui-button>
             </div>
             <mdui-button variant="filled" icon="login" full-width type="submit">登 录</mdui-button>
+            <div id="captchaSlider" style="margin:14px 0 2px;"></div>
           </form>
           <div class="divider">其他登录方式</div>
           <div class="socials2">
@@ -151,6 +166,11 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
   if (!email.trim()) { e.preventDefault(); toast.warning('请输入邮箱'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); toast.warning('请输入有效的邮箱地址'); return; }
   if (!pass) { e.preventDefault(); toast.warning('请输入密码'); return; }
+  const ctk = this.querySelector('[name=captcha_token]');
+  const cpt = this.querySelector('[name=captcha_pointJson]');
+  if (!ctk || !ctk.value || !cpt || !cpt.value) { e.preventDefault(); toast.warning('请先完成滑块验证'); return; }
 });
 </script>
-<?php pageFoot(); ?>
+<?php pageFoot('<script src="/lib/crypto-js.js"></script>
+<script src="/lib/captcha-verify.js"></script>
+<script>initCaptchaSlider({ wrap: "#captchaSlider", form: "#login-form" });</script>'); ?>

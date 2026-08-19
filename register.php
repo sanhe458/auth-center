@@ -6,6 +6,7 @@ require_once __DIR__ . '/api/lib/db.php';
 require_once __DIR__ . '/api/lib/helpers.php';
 require_once __DIR__ . '/api/lib/redis.php';
 require_once __DIR__ . '/api/lib/page.php';
+require_once __DIR__ . '/ajcaptcha/vendor/autoload.php';
 
 // 已登录 → 直接进控制台
 $me = currentUser();
@@ -18,7 +19,20 @@ $error = '';
 $old = ['nickname' => '', 'email' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!rateLimit('reg:' . clientIp(), 10, 3600)) {
+    // AJ-Captcha 服务端强校验（防注册机/撞库）
+    $capOk = false;
+    try {
+        $capConfig = require __DIR__ . '/ajcaptcha/src/config.php';
+        $capSvc = new \Fastknife\Service\BlockPuzzleCaptchaService($capConfig);
+        $capSvc->check($_POST['captcha_token'] ?? '', $_POST['captcha_pointJson'] ?? '');
+        $capOk = true;
+    } catch (\Throwable $e) {
+        $capOk = false;
+    }
+    if (!$capOk) {
+        $error = '请先完成滑块验证';
+        $old = ['nickname' => '', 'email' => ''];
+    } elseif (!rateLimit('reg:' . clientIp(), 10, 3600)) {
         $error = '注册过于频繁，请稍后再试';
         $old = ['nickname' => '', 'email' => ''];
     } else {
@@ -56,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $next = htmlspecialchars($_GET['next'] ?? '', ENT_QUOTES);
-pageHead('注册');
+pageHead('注册', '<link rel="stylesheet" href="/lib/captcha.css">');
 ?>
 <button class="theme-toggle fixed" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
 
@@ -85,6 +99,7 @@ pageHead('注册');
               <mdui-text-field name="password" label="密码" placeholder="至少 8 位" icon="lock--outlined" type="password" toggle-password clearable full-width></mdui-text-field>
             </div>
             <mdui-button variant="filled" icon="person_add" full-width type="submit">注 册</mdui-button>
+            <div id="captchaSlider" style="margin:14px 0 2px;"></div>
           </form>
           <div style="text-align:center; margin-top:18px;">
             <mdui-button variant="text" onclick="location.href='login.php<?= $next ? '?next=' . $next : '' ?>'">已有账号？去登录</mdui-button>
@@ -104,6 +119,11 @@ document.getElementById('reg-form').addEventListener('submit', function (e) {
   if (nick.trim().length < 2) { e.preventDefault(); toast.warning('昵称至少 2 个字符'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); toast.warning('请输入有效的邮箱地址'); return; }
   if (pass.length < 8) { e.preventDefault(); toast.warning('密码至少 8 位'); return; }
+  const ctk = this.querySelector('[name=captcha_token]');
+  const cpt = this.querySelector('[name=captcha_pointJson]');
+  if (!ctk || !ctk.value || !cpt || !cpt.value) { e.preventDefault(); toast.warning('请先完成滑块验证'); return; }
 });
 </script>
-<?php pageFoot(); ?>
+<?php pageFoot('<script src="/lib/crypto-js.js"></script>
+<script src="/lib/captcha-verify.js"></script>
+<script>initCaptchaSlider({ wrap: "#captchaSlider", form: "#reg-form" });</script>'); ?>
