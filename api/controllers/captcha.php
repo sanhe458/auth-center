@@ -14,20 +14,32 @@ use Fastknife\Service\BlockPuzzleCaptchaService;
 function captchaGet(): void
 {
     $config = require __DIR__ . '/../../ajcaptcha/src/config.php';
-    try {
-        $service = new BlockPuzzleCaptchaService($config);
-        $data = $service->get();
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'error' => false,
-            'repCode' => '0000',
-            'repData' => $data,
-            'repMsg' => null,
-            'success' => true,
-        ]);
-    } catch (\Throwable $e) {
-        fail(40000, '验证码生成失败：' . $e->getMessage(), 500);
+    $data = null;
+    // 优先从预生成池取（秒回），预生成脚本见 ajcaptcha/scripts/pregen.php
+    $r = redis();
+    $cached = $r->lpop(rk('captcha:pool'));
+    if ($cached) {
+        $d = json_decode($cached, true);
+        if (!empty($d['token']) && $r->exists(rk('captcha:' . $d['token']))) {
+            $data = $d; // 答案仍在 Redis，可复用
+        }
     }
+    if ($data === null) {
+        try {
+            $service = new BlockPuzzleCaptchaService($config);
+            $data = $service->get();
+        } catch (\Throwable $e) {
+            fail(40000, '验证码生成失败：' . $e->getMessage(), 500);
+        }
+    }
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => false,
+        'repCode' => '0000',
+        'repData' => $data,
+        'repMsg' => null,
+        'success' => true,
+    ]);
 }
 
 function captchaCheck(): void
