@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $next = htmlspecialchars($_GET['next'] ?? ($_POST['next'] ?? ''), ENT_QUOTES);
-pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css">');
+pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css?v=' . (filemtime(__DIR__ . '/lib/captcha.css') ?: 1) . '">');
 ?>
 <button class="theme-toggle fixed" onclick="toggleTheme()" title="切换主题"><mdui-icon id="theme-icon" name="dark_mode--outlined"></mdui-icon></button>
 
@@ -171,6 +171,6 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
   if (!ctk || !ctk.value || !cpt || !cpt.value) { e.preventDefault(); toast.warning('请先完成滑块验证'); return; }
 });
 </script>
-<?php pageFoot('<script src="/lib/crypto-js.js"></script>
-<script src="/lib/captcha-verify.js"></script>
+<?php pageFoot('<script src="/lib/crypto-js.js?v=' . (filemtime(__DIR__ . '/lib/crypto-js.js') ?: 1) . '"></script>
+<script src="/lib/captcha-verify.js?v=' . (filemtime(__DIR__ . '/lib/captcha-verify.js') ?: 1) . '"></script>
 <script>initCaptchaSlider({ wrap: "#captchaSlider", form: "#login-form" });</script>'); ?>
