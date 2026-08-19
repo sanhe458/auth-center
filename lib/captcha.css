@@ -1,30 +1,57 @@
-/* AJ-Captcha 滑动拼图组件样式（Auth Center 登录/注册用） */
-.captcha-wrap { width: 320px; max-width: 100%; margin: 14px auto 0; user-select: none; }
-.captcha-panel { border: 1px solid rgba(128,128,128,.25); border-radius: 8px; overflow: hidden;
-  background: var(--mdui-color-surface-container-lowest, #fff); }
-.captcha-imgbox { position: relative; width: 310px; height: 155px; overflow: hidden; background:#eee; }
-.captcha-imgbox img.back { position: absolute; left: 0; top: 0; width: 310px; height: 155px; display: block; }
-.captcha-mask { position: absolute; left: 0; top: 0; width: 310px; height: 155px;
-  background: rgba(0,0,0,.45); opacity: 0; transition: opacity .2s; }
+/* AJ-Captcha 滑动拼图组件 v2（极验风格弹出式）样式 — Auth Center 登录/注册 */
+
+/* ---------- 触发条 ---------- */
+.cap-geetest { width: 100%; max-width: 340px; margin: 0 auto; user-select: none; }
+.cap-trigger { display: flex; align-items: center; height: 42px; border-radius: 8px;
+  border: 1px solid rgba(128,128,128,.35); background: var(--mdui-color-surface-container-lowest, #fff);
+  cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; overflow: hidden; }
+.cap-trigger:hover { background: rgba(128,128,128,.06); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.cap-trigger.passed { border-color: rgba(76,175,80,.8); background: rgba(76,175,80,.1); cursor: default; }
+.cap-trigger-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--mdui-color-primary, #1565c0); border-right: 1px solid rgba(128,128,128,.18); }
+.cap-trigger.passed .cap-trigger-icon { color: #43a047; border-right-color: rgba(76,175,80,.25); }
+.cap-trigger-text { flex: 1; text-align: center; font-size: 14px; color: var(--mdui-color-on-surface, #333); }
+.cap-trigger.passed .cap-trigger-text { color: #43a047; }
+.cap-trigger-arrow { width: 32px; font-size: 20px; color: rgba(128,128,128,.6); text-align: center; }
+
+/* ---------- 弹出模态 ---------- */
+.cap-modal { display: none; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 9999;
+  align-items: center; justify-content: center; }
+.cap-modal-mask { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.48); }
+.cap-modal-panel { position: relative; width: 330px; max-width: 92vw; background: var(--mdui-color-surface, #fff);
+  border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.3); overflow: hidden; }
+.cap-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;
+  border-bottom: 1px solid rgba(128,128,128,.15); }
+.cap-modal-title { font-size: 14px; color: var(--mdui-color-on-surface, #333); }
+.cap-modal-close { cursor: pointer; font-size: 14px; color: rgba(128,128,128,.8); width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.cap-modal-close:hover { background: rgba(128,128,128,.12); }
+
+/* ---------- 滑块主区 ---------- */
+.cap-slider { padding: 12px; }
+.captcha-imgbox { position: relative; width: 100%; max-width: 310px; margin: 0 auto; overflow: hidden;
+  border-radius: 8px; background: #eee; }
+.captcha-imgbox img.back { position: absolute; left: 0; top: 0; width: 100%; height: auto; display: block; }
+.captcha-mask { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,.45);
+  opacity: 0; transition: opacity .2s; }
 .captcha-mask.on { opacity: 1; }
 .captcha-jigsaw { position: absolute; left: 0; top: 0; display: none; }
-.captcha-bar { position: relative; height: 42px; border-top: 1px solid rgba(128,128,128,.22);
-  background: rgba(128,128,128,.08); }
-.captcha-bar-track { position: absolute; left: 0; top: 0; height: 42px; width: 0px;
-  background: rgba(76,175,80,.35); border-right: 1px solid rgba(76,175,80,.7); }
-.captcha-bar-text { position: absolute; left: 0; top: 0; width: 100%; height: 42px; line-height: 42px;
-  text-align: center; font-size: 13px; color: var(--mdui-color-on-surface-variant, #777); z-index: 2; }
+.captcha-bar { position: relative; height: 42px; margin: 10px auto 0; width: 100%; max-width: 310px;
+  border: 1px solid rgba(128,128,128,.28); border-radius: 6px; background: rgba(128,128,128,.07); overflow: hidden; }
+.captcha-bar-track { position: absolute; left: 0; top: 0; height: 42px; width: 0px; background: rgba(76,175,80,.35); }
+.captcha-bar-text { position: absolute; left: 40px; top: 0; width: calc(100% - 40px); height: 42px; line-height: 42px;
+  text-align: center; font-size: 13px; color: var(--mdui-color-on-surface-variant, #777); z-index: 2;
+  pointer-events: none; }
 .captcha-bar-btn { position: absolute; left: 0; top: 0; width: 42px; height: 42px; z-index: 3;
   background: var(--mdui-color-primary-container, #e8f0fe); border-right: 1px solid rgba(0,0,0,.1);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  text-align: center; font-size: 18px; color: var(--mdui-color-primary, #1565c0); }
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
+  color: var(--mdui-color-primary, #1565c0); }
 .captcha-bar-btn.disabled { opacity: .6; pointer-events: none; }
-.captcha-refresh { position: absolute; right: 8px; top: 6px; z-index: 5; width: 26px; height: 26px;
-  background: rgba(255,255,255,.9); border-radius: 50%; border: 1px solid rgba(0,0,0,.1);
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
-.captcha-msg { position: absolute; left: 0; top: 0; width: 310px; height: 155px; z-index: 6;
-  display: none; align-items: center; justify-content: center; font-size: 15px; color: #fff;
-  background: rgba(0,0,0,.55); }
+.captcha-msg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 6; display: none;
+  align-items: center; justify-content: center; font-size: 15px; color: #fff; background: rgba(0,0,0,.55); }
 .captcha-msg.show { display: flex; }
 .captcha-msg.ok { background: rgba(76,175,80,.75); }
 .captcha-msg.err { background: rgba(229,57,53,.75); }
+.cap-slider-foot { text-align: center; margin-top: 10px; }
+.cap-refresh { display: inline-block; font-size: 13px; color: var(--mdui-color-primary, #1565c0); cursor: pointer; }
+.cap-refresh:hover { text-decoration: underline; }

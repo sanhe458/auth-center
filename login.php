@@ -130,8 +130,8 @@ pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css">');
             <div style="text-align:right; margin: 4px 0 16px;">
               <mdui-button variant="text" style="font-size:13px;">忘记密码？</mdui-button>
             </div>
+            <div id="captchaSlider" style="margin:2px 0 14px;"></div>
             <mdui-button variant="filled" icon="login" full-width type="submit">登 录</mdui-button>
-            <div id="captchaSlider" style="margin:14px 0 2px;"></div>
           </form>
           <div class="divider">其他登录方式</div>
           <div class="socials2">

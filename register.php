@@ -98,8 +98,8 @@ pageHead('注册', '<link rel="stylesheet" href="/lib/captcha.css">');
             <div class="form-field">
               <mdui-text-field name="password" label="密码" placeholder="至少 8 位" icon="lock--outlined" type="password" toggle-password clearable full-width></mdui-text-field>
             </div>
+            <div id="captchaSlider" style="margin:2px 0 14px;"></div>
             <mdui-button variant="filled" icon="person_add" full-width type="submit">注 册</mdui-button>
-            <div id="captchaSlider" style="margin:14px 0 2px;"></div>
           </form>
           <div style="text-align:center; margin-top:18px;">
             <mdui-button variant="text" onclick="location.href='login.php<?= $next ? '?next=' . $next : '' ?>'">已有账号？去登录</mdui-button>
