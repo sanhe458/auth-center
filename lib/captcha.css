@@ -41,6 +41,14 @@
 .captcha-mask { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,.45);
   opacity: 0; transition: opacity .2s; }
 .captcha-mask.on { opacity: 1; }
+/* 图片加载中：白色半透明遮罩（覆盖图片区，防止看到未加载/裂图） */
+.captcha-loading { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 7;
+  background: rgba(255,255,255,.55); }
+.captcha-loading.off { display: none; }
+/* 加载中禁用态：滑动条 + 换一张 */
+.captcha-bar.disabled { pointer-events: none; }
+.captcha-bar.disabled .captcha-bar-btn { opacity: .5; cursor: not-allowed; }
+.cap-refresh.disabled { opacity: .45; pointer-events: none; cursor: not-allowed; }
 .captcha-jigsaw { position: absolute; left: 0; top: 0; display: none; }
 .captcha-bar { position: relative; height: 42px; margin: 10px auto 0; width: 100%; max-width: 310px;
   border: 1px solid rgba(128,128,128,.28); border-radius: 6px; background: rgba(128,128,128,.07); overflow: hidden; }
