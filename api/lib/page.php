@@ -91,7 +91,7 @@ function pageHead(string $title, string $extraCss = ''): void
 <link rel="stylesheet" href="/css/common.css">';
     if ($extraCss) echo $extraCss;
     echo '<title>' . htmlspecialchars($title) . ' · Auth Center</title>
-<script src="/lib/theme.js"></script>
+<script src="/lib/theme.js?v=' . (filemtime(__DIR__ . '/../../lib/theme.js') ?: 1) . '"></script>
 </head>
 <body>';
 }
@@ -99,7 +99,7 @@ function pageHead(string $title, string $extraCss = ''): void
 /** 页面尾部 */
 function pageFoot(string $extraJs = ''): void
 {
-    echo '<script src="/lib/mdui.global.js"></script>';
+    echo '<script src="/lib/mdui.global.js?v=' . (filemtime(__DIR__ . '/../../lib/mdui.global.js') ?: 1) . '"></script>';
     if ($extraJs) echo $extraJs;
     echo '</body></html>';
 }
