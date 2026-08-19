@@ -30,7 +30,7 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
                     │
         ┌───────────┼───────────┐
         ▼           ▼           ▼
-    MariaDB     Redis 7      imgbb 图床
+    MariaDB     Redis 7      第三方图床
     :3306       :6379        (头像)
 ```
 
@@ -40,7 +40,7 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
 - 缓存：Redis 7（令牌缓存、滑动窗口限流）
 - 前端：MDUI 2（Material Design 3），服务端渲染，深浅色主题（Cookie 存储）
 - 文档：VitePress（base=/docs/）
-- 图床：imgbb（头像存储）
+- 图床：第三方图床服务（头像存储）
 
 ## 三、域名与部署路径
 
@@ -87,7 +87,7 @@ auth.sanhe.com.mp 关键配置：
 
 ```
 index.php          路由入口（/api/{controller}/{action}）
-config.php         配置（DB/Redis/密钥 pepper/imgbb key）
+config.php         配置（DB/Redis/密钥 pepper/图床 key）
 lib/
   db.php           PDO 单例
   redis.php        Redis + 滑动窗口限流 rateLimit()
@@ -158,8 +158,8 @@ controllers/
 
 ## 九、头像功能
 
-- 图床选择历史：葫芦侠/新野邮政/京东图床全废（接口挂或海外 IP 不通）→ 最终 imgbb（正规老牌）
-- 上传：浏览器端 Canvas 压缩（超 2MB 自动压，最长边 1280px，质量 0.85→0.45 循环，GIF 不压）→ POST /api/user/avatar → imgbb → 存 users.avatar
+- 图床选型：踩过葫芦侠/新野邮政/京东图床的坑（接口挂或海外 IP 不通）→ 最终选定正规老牌第三方图床
+- 上传：浏览器端 Canvas 压缩（超 2MB 自动压，最长边 1280px，质量 0.85→0.45 循环，GIF 不压）→ POST /api/user/avatar → 图床 → 存 users.avatar
 - 占位头像：/avatar.php 动态 SVG，按 uid 稳定选 8 组渐变（品牌琥珀橙为主），无头像时全站显示
 - 品牌色：琥珀金→珊瑚橙渐变（#ffb74d→#ff7043），深色模式 OLED 纯黑（#000）
 
