@@ -101,9 +101,9 @@ document.getElementById('reg-form').addEventListener('submit', function (e) {
   const nick = this.querySelector('[name=nickname]').value || '';
   const email = this.querySelector('[name=email]').value || '';
   const pass  = this.querySelector('[name=password]').value || '';
-  if (nick.trim().length < 2) { e.preventDefault(); mdui.snackbar('昵称至少 2 个字符'); return; }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); mdui.snackbar('请输入有效的邮箱地址'); return; }
-  if (pass.length < 8) { e.preventDefault(); mdui.snackbar('密码至少 8 位'); return; }
+  if (nick.trim().length < 2) { e.preventDefault(); toast.warning('昵称至少 2 个字符'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); toast.warning('请输入有效的邮箱地址'); return; }
+  if (pass.length < 8) { e.preventDefault(); toast.warning('密码至少 8 位'); return; }
 });
 </script>
 <?php pageFoot(); ?>

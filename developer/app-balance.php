@@ -79,10 +79,9 @@ pageFoot();
 const MAX_WD = <?= (int)$balance['withdrawable'] ?>;
 document.getElementById('btnWithdraw').addEventListener('click', async () => {
   const amt = document.getElementById('wdAmt').value;
-  const msg = document.getElementById('wdMsg');
-  if (!amt || parseFloat(amt) <= 0) { msg.textContent = '请输入有效金额'; return; }
-  if (parseInt(amt * 100) > MAX_WD) { msg.textContent = '超出可提现余额'; return; }
-  msg.textContent = '正在提现...';
+  if (!amt || parseFloat(amt) <= 0) { toast.warning('请输入有效金额'); return; }
+  if (parseInt(amt * 100) > MAX_WD) { toast.warning('超出可提现余额'); return; }
+  const t = toast.loading('正在提现...');
   try {
     const r = await fetch('/api/app_balance/withdraw', {
       method: 'POST',
@@ -91,13 +90,13 @@ document.getElementById('btnWithdraw').addEventListener('click', async () => {
     });
     const d = await r.json();
     if (r.ok) {
-      msg.innerHTML = `<span style="color:#1b8a5a;">✅ 提现成功 ¥${d.amount_yuan}，已到账通用余额！</span>`;
+      t.done('提现成功', `¥${d.amount_yuan} 已到账通用余额！`);
       setTimeout(() => location.reload(), 1500);
     } else {
-      msg.textContent = '提现失败：' + (d.error || d.message || '未知错误');
+      t.fail('提现失败', d.error || d.message || '未知错误');
     }
   } catch(e) {
-    msg.textContent = '网络错误：' + e.message;
+    t.fail('网络错误', e.message);
   }
 });
 </script>

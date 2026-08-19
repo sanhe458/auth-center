@@ -104,8 +104,8 @@ function getChannelVal() {
 document.getElementById('btnTopup').addEventListener('click', async () => {
   const amt = document.getElementById('amt').value;
   const msg = document.getElementById('topupMsg');
-  if (!amt || parseFloat(amt) <= 0) { msg.textContent = '请输入有效金额'; return; }
-  msg.textContent = '正在发起充值...';
+  if (!amt || parseFloat(amt) <= 0) { toast.warning('请输入有效金额'); return; }
+  const t = toast.loading('正在发起充值...');
   try {
     const r = await fetch('/api/balance/recharge/prepare', {
       method: 'POST',
@@ -121,23 +121,25 @@ document.getElementById('btnTopup').addEventListener('click', async () => {
     if (r.ok) {
       const p = d;
       if (p.pay_url) {
+        t.done('订单已生成', `金额 ¥${p.amount_yuan}，请前往支付`);
         msg.innerHTML = `订单 ${p.order_no} 已生成，金额 ¥${p.amount_yuan}。`;
         msg.innerHTML += `<br><a href="${p.pay_url}" target="_blank" rel="noopener"><mdui-button variant="filled" icon="open_in_new--outlined" style="margin-top:8px;">前往支付</mdui-button></a>`;
         msg.innerHTML += `<br><span style="font-size:12px;opacity:.6;">支付完成后自动刷新到账...</span>`;
         startPoll(p.order_no);
       } else if (p.qrcode) {
+        t.done('订单已生成', `请扫码支付 ¥${p.amount_yuan}`);
         msg.innerHTML = `请扫码支付 ¥${p.amount_yuan}：<br><img id="payQr" alt="" style="width:180px;height:180px;margin-top:8px;"><br><span style="font-size:12px;opacity:.6;">支付完成后自动刷新到账...</span>`;
         const qrImg = document.getElementById('payQr');
         if (qrImg) qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(p.qrcode);
         startPoll(p.order_no);
       } else {
-        msg.textContent = '订单已生成，但未能获取支付地址：' + p.order_no;
+        t.fail('订单已生成', '但未能获取支付地址：' + p.order_no);
       }
     } else {
-      msg.textContent = '发起失败：' + (d.error || d.message || '未知错误');
+      t.fail('发起失败', d.error || d.message || '未知错误');
     }
   } catch (e) {
-    msg.textContent = '网络错误：' + e.message;
+    t.fail('网络错误', e.message);
   }
 });
 
@@ -151,8 +153,7 @@ function startPoll(orderNo) {
       const d = await r.json();
       if (r.ok && d.paid) {
         clearInterval(pollTimer);
-        const msg = document.getElementById('topupMsg');
-        msg.innerHTML = `<span style="color:#1b8a5a;">✅ 支付成功，¥${d.amount_yuan} 已到账！</span>`;
+        toast.success('支付成功', `¥${d.amount_yuan} 已到账！`);
         setTimeout(() => location.reload(), 1500);
       }
     } catch (e) { /* 忽略临时错误，继续轮询 */ }
@@ -164,9 +165,8 @@ function startPoll(orderNo) {
 // 卡密兑换
 document.getElementById('btnRedeem').addEventListener('click', async () => {
   const code = document.getElementById('cardCode').value.trim();
-  const msg = document.getElementById('redeemMsg');
-  if (!code) { msg.textContent = '请输入卡密'; return; }
-  msg.textContent = '正在兑换...';
+  if (!code) { toast.warning('请输入卡密'); return; }
+  const t = toast.loading('正在兑换...');
   try {
     const r = await fetch('/api/balance/card/redeem', {
       method: 'POST',
@@ -175,13 +175,13 @@ document.getElementById('btnRedeem').addEventListener('click', async () => {
     });
     const d = await r.json();
     if (r.ok) {
-      msg.textContent = `兑换成功！到账 ¥${d.amount_yuan}，当前余额 ¥${d.balance_yuan}`;
+      t.done('兑换成功', `到账 ¥${d.amount_yuan}，当前余额 ¥${d.balance_yuan}`);
       setTimeout(() => location.reload(), 1200);
     } else {
-      msg.textContent = '兑换失败：' + (d.error || d.message || '未知错误');
+      t.fail('兑换失败', d.error || d.message || '未知错误');
     }
   } catch (e) {
-    msg.textContent = '网络错误：' + e.message;
+    t.fail('网络错误', e.message);
   }
 });
 </script>

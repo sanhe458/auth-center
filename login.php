@@ -152,9 +152,9 @@ pageHead('登录');
 document.getElementById('login-form').addEventListener('submit', function (e) {
   const email = this.querySelector('[name=email]').value || '';
   const pass  = this.querySelector('[name=password]').value || '';
-  if (!email.trim()) { e.preventDefault(); mdui.snackbar('请输入邮箱'); return; }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); mdui.snackbar('请输入有效的邮箱地址'); return; }
-  if (!pass) { e.preventDefault(); mdui.snackbar('请输入密码'); return; }
+  if (!email.trim()) { e.preventDefault(); toast.warning('请输入邮箱'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { e.preventDefault(); toast.warning('请输入有效的邮箱地址'); return; }
+  if (!pass) { e.preventDefault(); toast.warning('请输入密码'); return; }
 });
 </script>
 <?php pageFoot(); ?>

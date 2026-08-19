@@ -91,7 +91,9 @@ function pageHead(string $title, string $extraCss = ''): void
 <link rel="stylesheet" href="/css/common.css">';
     if ($extraCss) echo $extraCss;
     echo '<title>' . htmlspecialchars($title) . ' · Auth Center</title>
+<link rel="stylesheet" href="/lib/toast.css?v=' . (filemtime(__DIR__ . '/../../lib/toast.css') ?: 1) . '">
 <script src="/lib/theme.js?v=' . (filemtime(__DIR__ . '/../../lib/theme.js') ?: 1) . '"></script>
+<script src="/lib/toast.js?v=' . (filemtime(__DIR__ . '/../../lib/toast.js') ?: 1) . '"></script>
 </head>
 <body>';
 }

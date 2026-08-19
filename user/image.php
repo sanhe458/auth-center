@@ -123,20 +123,21 @@ function renderTiers() {
 }
 
 async function startUnlock() {
-  const msg = document.getElementById('upMsg');
   if (confirm('90天/180天/永久 需 10 元解锁（一次付费终身有效）。去解锁？')) {
-    msg.textContent = '正在创建解锁订单...';
+    const t = toast.loading('正在创建解锁订单...');
     try {
       const r = await fetch('/api/image/unlock_prepare', {method:'POST'});
       const d = await r.json();
       if (r.ok && d.pay_url) {
+        t.done('订单已生成', '请前往支付 ¥10 解锁');
+        const msg = document.getElementById('upMsg');
         msg.innerHTML = '解锁订单已生成：<br><a href="'+d.pay_url+'" target="_blank" rel="noopener"><mdui-button variant="filled" style="margin-top:8px;">前往支付 ¥10 解锁</mdui-button></a><br><span style="font-size:12px;opacity:.6;">支付完成后回到此页刷新即可。</span>';
         // 启动轮询确认
         pollUnlock(d.order_no);
       } else {
-        msg.textContent = '创建订单失败：' + (d.error||'未知错误');
+        t.fail('创建订单失败', d.error||'未知错误');
       }
-    } catch(e) { msg.textContent = '网络错误：'+e.message; }
+    } catch(e) { t.fail('网络错误', e.message); }
   }
 }
 
@@ -153,7 +154,8 @@ function pollUnlock(orderNo) {
       const d = await r.json();
       if (r.ok && d.permanent) {
         clearInterval(t);
-        document.getElementById('upMsg').innerHTML = '✅ 解锁成功！现在可以上传永久图片了。';
+        document.getElementById('upMsg').innerHTML = '';
+        toast.success('解锁成功', '现在可以上传永久图片了');
         setTimeout(()=>location.reload(), 1500);
       }
     } catch(e) {}
@@ -167,9 +169,9 @@ function copyUrl(btn, url) {
 document.getElementById('btnUp').addEventListener('click', async () => {
   const file = document.getElementById('fileInput').files[0];
   const msg = document.getElementById('upMsg');
-  if (!file) { msg.textContent='请选择图片'; return; }
-  if (!selectedTier) { msg.textContent='请选择过期时间'; return; }
-  msg.textContent = '上传中...';
+  if (!file) { toast.warning('请选择图片'); return; }
+  if (!selectedTier) { toast.warning('请选择过期时间'); return; }
+  const t = toast.loading('上传中...');
   const fd = new FormData();
   fd.append('image', file);
   fd.append('tier', selectedTier);
@@ -178,11 +180,12 @@ document.getElementById('btnUp').addEventListener('click', async () => {
     const d = await r.json();
     if (r.ok && d.image) {
       msg.innerHTML = '✅ 上传成功：<br><a href="'+d.image.url+'" target="_blank" rel="noopener" style="color:var(--mdui-color-primary);word-break:break-all;">'+d.image.url+'</a>';
+      t.done('上传成功', '图片已上传到你的图床');
       setTimeout(()=>location.reload(), 1200);
     } else {
-      msg.textContent = '上传失败：' + (d.error||d.message||'未知错误');
+      t.fail('上传失败', d.error||d.message||'未知错误');
     }
-  } catch(e) { msg.textContent='网络错误：'+e.message; }
+  } catch(e) { t.fail('网络错误', e.message); }
 });
 
 renderTiers();

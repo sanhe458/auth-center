@@ -251,7 +251,7 @@ function removeAvatar() {
   if (!confirm('确定移除头像？')) return;
   fetch('/api/user/avatar', { method: 'DELETE', credentials: 'same-origin' })
     .then(async r => ({ ok: r.ok, d: await r.json() }))
-    .then(({ ok, d }) => { if (ok) location.reload(); else mdui.snackbar(d.error || d.message || '未知错误'); });
+    .then(({ ok, d }) => { if (ok) location.reload(); else toast.error(d.error || d.message || '未知错误'); });
 }
 </script>
 
