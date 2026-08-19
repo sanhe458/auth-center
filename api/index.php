@@ -172,6 +172,7 @@ try {
         case 'captcha':
             switch ($action) {
                 case 'get':   captchaGet();  break;
+                case 'img':   captchaImg();  break;
                 case 'check': captchaCheck(); break;
                 default: fail(40000, '未知验证码操作', 404);
             }

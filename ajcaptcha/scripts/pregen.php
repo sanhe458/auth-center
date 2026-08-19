@@ -28,7 +28,17 @@ $made = 0;
 while ((int)$r->llen(rk('captcha:pool')) < $TARGET && (int)$r->llen(rk('captcha:pool')) < $MAX) {
     try {
         $d = $svc->get();               // 答案已存 captcha:<token>
-        $r->rpush(rk('captcha:pool'), json_encode($d));
+        // 图片单独存，池里只存 URL 形式（规避 data URL 大图限制，省内存）
+        $r->set(rk('captcha:img:' . $d['token']), json_encode([
+            'o' => $d['originalImageBase64'],
+            'j' => $d['jigsawImageBase64'],
+        ]), 600);
+        $r->rpush(rk('captcha:pool'), json_encode([
+            'token'         => $d['token'],
+            'secretKey'     => $d['secretKey'],
+            'originalImage' => '/api/captcha/img?token=' . urlencode($d['token']) . '&t=o',
+            'jigsawImage'   => '/api/captcha/img?token=' . urlencode($d['token']) . '&t=j',
+        ]));
         $made++;
     } catch (\Throwable $e) {
         fwrite(STDERR, "生成失败: " . $e->getMessage() . "\n");
