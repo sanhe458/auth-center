@@ -8,7 +8,7 @@ docs-src/.vitepress/dist/
 
 # 敏感配置（复制 config.example.php 为 config.php 使用，密钥绝不上传）
 api/config.php
-config.php
+/config.php
 
 # 备份与临时文件
 *.bak
