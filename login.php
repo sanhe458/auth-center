@@ -119,23 +119,19 @@ pageHead('登录');
             <mdui-button variant="filled" icon="login" full-width type="submit">登 录</mdui-button>
           </form>
           <div class="divider">其他登录方式</div>
-          <div class="socials">
-            <mdui-button variant="tonal" full-width onclick="location.href='/api/oauth/rainbow?type=wx'">
-              <img slot="icon" src="/icons/wechat.png" style="width:20px;height:20px;border-radius:50%;">
-              <span>微信</span>
-            </mdui-button>
-            <mdui-button variant="tonal" full-width onclick="location.href='/api/oauth/rainbow?type=qq'">
-              <img slot="icon" src="/icons/qq.png" style="width:20px;height:20px;border-radius:6px;">
-              <span>QQ</span>
-            </mdui-button>
-            <mdui-button variant="tonal" full-width onclick="location.href='/api/oauth/github'">
-              <img slot="icon" src="/icons/github.png" style="width:18px;height:18px;border-radius:6px;margin-right:2px;">
-              <span>GitHub</span>
-            </mdui-button>
-            <mdui-button variant="tonal" full-width onclick="location.href='/api/oauth/rainbow?type=gitee'">
-              <img slot="icon" src="/icons/gitee.png" style="width:18px;height:18px;border-radius:6px;margin-right:2px;">
-              <span>Gitee</span>
-            </mdui-button>
+          <div class="socials2">
+            <a class="social-btn" href="/api/oauth/rainbow?type=wx" style="--c:07c160">
+              <img src="/icons/wechat.png">
+            </a>
+            <a class="social-btn" href="/api/oauth/rainbow?type=qq" style="--c:12b7f5">
+              <img src="/icons/qq.png">
+            </a>
+            <a class="social-btn" href="/api/oauth/github" style="--c:24292f">
+              <img src="/icons/github.png">
+            </a>
+            <a class="social-btn" href="/api/oauth/rainbow?type=gitee" style="--c:de6d2c">
+              <img src="/icons/gitee.png">
+            </a>
           </div>
           <div style="text-align:center; margin-top:18px;">
             <mdui-button variant="text" onclick="location.href='register.php<?= $next ? '?next=' . $next : '' ?>'">还没有账号？立即注册</mdui-button>

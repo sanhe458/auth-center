@@ -88,7 +88,7 @@ function pageHead(string $title, string $extraCss = ''): void
 <meta name="renderer" content="webkit"/>
 <link rel="stylesheet" href="/lib/mdui.css">
 <link rel="stylesheet" href="/lib/material-icons.css">
-<link rel="stylesheet" href="/css/common.css">';
+<link rel="stylesheet" href="/css/common.css?v=1787119506">';
     if ($extraCss) echo $extraCss;
     echo '<title>' . htmlspecialchars($title) . ' · Auth Center</title>
 <link rel="stylesheet" href="/lib/toast.css?v=' . (filemtime(__DIR__ . '/../../lib/toast.css') ?: 1) . '">

@@ -56,6 +56,17 @@ body {
 .divider::before, .divider::after { content:""; flex:1; height:1px; background: currentColor; opacity:.2; }
 .socials { display: flex; gap: 12px; }
 .socials mdui-button { flex: 1; }
+/* 登录页圆形渠道按钮（绑定页同款风格） */
+.socials2 { display: flex; justify-content: center; gap: 16px; margin-top: 8px; }
+.social-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgb(var(--c));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  transition: transform .15s, box-shadow .15s;
+}
+.social-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.22); }
+.social-btn img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 .foot { text-align: center; font-size: 12px; opacity: .5; margin-top: 20px; }
 
 /* 主题切换按钮：无顶部导航的页面（登录/注册/授权）用悬浮按钮 */
