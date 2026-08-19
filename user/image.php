@@ -161,9 +161,7 @@ function pollUnlock(orderNo) {
 }
 
 function copyUrl(btn, url) {
-  navigator.clipboard.writeText(url).then(()=>{
-    const old=btn.textContent; btn.textContent='已复制'; setTimeout(()=>btn.textContent=old,1500);
-  });
+  copyText(btn, url);
 }
 
 document.getElementById('btnUp').addEventListener('click', async () => {

@@ -118,12 +118,7 @@ contentOpen('商户管理', '易支付兼容收款 · 分配商户ID与密钥');
 </div>
 
 <script>
-function copyText(btn, txt) {
-  navigator.clipboard.writeText(txt).then(() => {
-    const old = btn.textContent; btn.textContent = '已复制';
-    setTimeout(() => btn.textContent = old, 1500);
-  });
-}
+// 复制走全局兼容函数（theme.js 提供：Clipboard API + WebView 回退）
 </script>
 
 <?php

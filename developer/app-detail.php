@@ -154,7 +154,7 @@ devSidebar('devapps');
       <div style="font-size:13px; opacity:.7; margin-bottom:10px;">旧密钥已失效。请立即复制保存，此密钥<b>仅本次显示</b>，刷新后不再出现。</div>
       <div style="display:flex; align-items:center; gap:10px;">
         <mdui-text-field readonly id="regen-secret" value="<?= htmlspecialchars($regenedSecret) ?>" full-width style="font-family:ui-monospace,monospace;"></mdui-text-field>
-        <mdui-button variant="filled" icon="content_copy--outlined" onclick="navigator.clipboard.writeText(document.getElementById('regen-secret').value);mdui.snackbar('已复制');">复制</mdui-button>
+        <mdui-button variant="filled" icon="content_copy--outlined" onclick="copyText(this, document.getElementById('regen-secret').value)">复制</mdui-button>
       </div>
     </mdui-card>
     <?php endif; ?>
