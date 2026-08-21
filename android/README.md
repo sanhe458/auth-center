@@ -27,6 +27,10 @@ echo "sdk.dir=/path/to/android-sdk" > local.properties
 
 ## 使用
 
+**开箱即用**：App 内置 AuthCenter 官方应用（`authcenter_android`），打开后配置已预填，直接点「使用 AuthCenter 登录」即可，无需注册应用。
+
+若要接入自己的应用：
+
 1. 到 Auth Center 开发者控制台注册应用：
    - 回调地址填 `authcenter://callback`（与 App 内默认回调一致，可改）
    - 权限勾选：**basic**（必选）+ **notify**（若要发通知）

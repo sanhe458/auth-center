@@ -19,6 +19,9 @@ android {
         buildConfigField("String", "DEFAULT_BASE_URL", "\"https://auth.sanhe.com.mp\"")
         // 默认回调地址（自定义 scheme，需与 AuthCenter 应用注册的 callback_url 一致）
         buildConfigField("String", "DEFAULT_REDIRECT_URI", "\"authcenter://callback\"")
+        // 内置官方应用凭据（AuthCenter 内置，开箱即用，无需注册）
+        buildConfigField("String", "DEFAULT_CLIENT_ID", "\"authcenter_android\"")
+        buildConfigField("String", "DEFAULT_CLIENT_SECRET", "\"sk-gIByhNMcdkCETnJUs9ymbcHYyITgbUJq\"")
     }
 
     buildTypes {

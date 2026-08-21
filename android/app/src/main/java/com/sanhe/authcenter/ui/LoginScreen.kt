@@ -58,10 +58,10 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
     val loading by vm.loading.collectAsState()
     val error by vm.error.collectAsState()
 
-    var baseUrl by remember { mutableStateOf(config.baseUrl) }
-    var clientId by remember { mutableStateOf(config.clientId) }
-    var clientSecret by remember { mutableStateOf(config.clientSecret) }
-    var redirectUri by remember { mutableStateOf(config.redirectUri) }
+    var baseUrl by remember { mutableStateOf(vm.defaultBaseUrl) }
+    var clientId by remember { mutableStateOf(vm.defaultClientId) }
+    var clientSecret by remember { mutableStateOf(vm.defaultClientSecret) }
+    var redirectUri by remember { mutableStateOf(vm.defaultRedirectUri) }
 
     // 配置从 DataStore 恢复后同步到输入框
     LaunchedEffect(config) {
@@ -127,6 +127,7 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
                             value = clientId,
                             onValueChange = { clientId = it },
                             label = { Text("Client ID") },
+                            placeholder = { Text(vm.defaultClientId) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -135,6 +136,7 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
                             value = clientSecret,
                             onValueChange = { clientSecret = it },
                             label = { Text("Client Secret") },
+                            placeholder = { Text("已内置，留空用官方应用") },
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth()
@@ -153,8 +155,8 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
                             onClick = {
                                 vm.saveConfig(
                                     baseUrl.ifBlank { vm.defaultBaseUrl },
-                                    clientId,
-                                    clientSecret,
+                                    clientId.ifBlank { vm.defaultClientId },
+                                    clientSecret.ifBlank { vm.defaultClientSecret },
                                     redirectUri.ifBlank { vm.defaultRedirectUri }
                                 )
                             },

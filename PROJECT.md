@@ -184,6 +184,7 @@ controllers/
 - 功能：OAuth 授权码登录（WebView 内授权、回调拦截、state 防 CSRF）、用户信息、token 自动刷新、退出吊销、notify 发信
 - 包名 `com.sanhe.authcenter`，minSdk 26 / targetSdk 34，构建 `./gradlew :app:assembleDebug`（本机已验证出 APK）
 - 回调地址默认 `authcenter://callback`，服务器/client_id/secret 应用内可配
+- **内置官方应用**：后端 `api/scripts/seed_official_app.php` 幂等 seed，创建 `authcenter_android` 应用（callback `authcenter://callback`，scopes basic+notify，归管理员）；App 预填此凭据，开箱即用无需注册（生产库已执行，app id=7）
 - 注意：App 内置 client_secret 无法保密，自用/内部场景可接受，对外分发需 PKCE 或中转后端
 
 ## 十一、演示站（demo.sanhe.com.mp）
