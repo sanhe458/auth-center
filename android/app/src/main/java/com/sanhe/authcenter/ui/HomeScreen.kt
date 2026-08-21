@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.sanhe.authcenter.ui.theme.Amber
 import com.sanhe.authcenter.ui.theme.Coral
 import com.sanhe.authcenter.ui.theme.DeepAmber
@@ -231,19 +232,34 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
 @Composable
 private fun UserAvatar(nickname: String, avatar: String) {
     val ch = nickname.firstOrNull()?.uppercase() ?: "?"
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .clip(CircleShape)
-            .background(Brush.linearGradient(listOf(Amber, Coral))),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            ch,
-            color = DeepAmber,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+    val gradient = Brush.linearGradient(listOf(Amber, Coral))
+    if (avatar.isNotBlank()) {
+        AsyncImage(
+            model = avatar,
+            contentDescription = "头像",
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(gradient),
+            placeholder = null,
+            fallback = null,
+            error = null
         )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(gradient),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                ch,
+                color = DeepAmber,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
