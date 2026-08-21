@@ -55,7 +55,7 @@ function notifyAuthApp(): array
 
     // 限频：按应用滑动窗口
     if (!rateLimit('notify:' . $app['id'], NOTIFY_RATE_MAX, NOTIFY_RATE_WINDOW)) {
-        fail(429, '发送过于频繁，请稍后再试', 429);
+        fail(40010, '发送过于频繁，请稍后再试', 429);
     }
 
     return $app;
@@ -187,7 +187,7 @@ function notifySendToUser(): void
     );
     $st->execute([$user['id'], $app['id'], '%notify%']);
     if ((int)$st->fetchColumn() === 0) {
-        fail(403, '目标用户未授权该应用的 notify 权限', 403);
+        fail(40020, '目标用户未授权该应用的 notify 权限', 403);
     }
 
     // 发送

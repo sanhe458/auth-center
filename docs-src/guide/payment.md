@@ -6,7 +6,7 @@ Auth Center 内置一套**易支付（彩虹易支付 V1）兼容的收款能力
 
 ## 一、申请商户
 
-在开发者控制台打开你的应用（如 [SDK演示站](https://auth.sanhe.com.mp/developer/apps.php)），在「易支付收款」区块点 **开通收款商户**，即可获得：
+在开发者控制台打开你的应用（如 [SDK演示站](<AUTH_SERVER>/developer/apps.php)），在「易支付收款」区块点 **开通收款商户**，即可获得：
 
 - **商户ID（pid）**：数字，如 `352888`
 - **MD5密钥（key）**：32 位字符串，明文可复制
@@ -17,8 +17,8 @@ Auth Center 内置一套**易支付（彩虹易支付 V1）兼容的收款能力
 
 | 用途 | 地址 |
 |------|------|
-| API 下单 | `https://auth.sanhe.com.mp/mapi.php` |
-| 页面跳转下单 | `https://auth.sanhe.com.mp/submit.php` |
+| API 下单 | `<AUTH_SERVER>/mapi.php` |
+| 页面跳转下单 | `<AUTH_SERVER>/submit.php` |
 | 异步回调接收 | 用你自己站的 `notify_url` |
 
 ## 三、下单参数（易支付 V1 协议）
@@ -56,8 +56,8 @@ sign = md5( 按 ASCII 排序并去掉 sign/sign_type/空值后的 "k=v&..." 拼�
   "type": "alipay",
   "trade_no": "P20260818101852924b69e851",
   "out_trade_no": "你的订单号",
-  "payurl": "https://auth.sanhe.com.mp/pay/index.php?order_no=P2026...",
-  "qrcode": "https://auth.sanhe.com.mp/pay/index.php?order_no=P2026..."
+  "payurl": "<AUTH_SERVER>/pay/index.php?order_no=P2026...",
+  "qrcode": "<AUTH_SERVER>/pay/index.php?order_no=P2026..."
 }
 ```
 
@@ -102,6 +102,6 @@ sign = md5( 按 ASCII 排序并去掉 sign/sign_type/空值后的 "k=v&..." 拼�
 
 ## 六、示例代码
 
-完整可跑示例见 SDK：[sdk/php/examples/pay.php](https://auth.sanhe.com.mp/sdk/php/examples/pay.php)（下单）和 [pay_notify.php](https://auth.sanhe.com.mp/sdk/php/examples/pay_notify.php)（回调验签）。
+完整可跑示例见 SDK：[sdk/php/examples/pay.php](<AUTH_SERVER>/sdk/php/examples/pay.php)（下单）和 [pay_notify.php](<AUTH_SERVER>/sdk/php/examples/pay_notify.php)（回调验签）。
 
-在线体验：[演示站 → 余额支付演示](https://demo.sanhe.com.mp/pay.php)
+在线体验：[演示站 → 余额支付演示](<DEMO_SERVER>/pay.php)

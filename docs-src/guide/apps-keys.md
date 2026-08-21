@@ -1,6 +1,6 @@
 # 应用与密钥管理
 
-在[控制台](https://auth.sanhe.com.mp/user/apps.php)管理你的应用和密钥。
+在[控制台](<AUTH_SERVER>/user/apps.php)管理你的应用和密钥。
 
 ## 应用生命周期
 

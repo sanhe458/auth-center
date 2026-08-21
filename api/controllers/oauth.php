@@ -223,6 +223,9 @@ function oauthConsent(): void
     $app = $db->prepare('SELECT * FROM apps WHERE id = ? LIMIT 1');
     $app->execute([$ctx['app_id']]);
     $app = $app->fetch();
+    if (!$app) {
+        fail(40002, '应用不存在或已删除，请重新发起授权', 400);
+    }
 
     $code = issueAuthCode($ctx['user_id'], $app, $ctx['redirect_uri'], $grantScope, $ctx['state']);
     header('Location: ' . $ctx['redirect_uri'] . (strpos($ctx['redirect_uri'], '?') !== false ? '&' : '?') . 'code=' . urlencode($code) . ($ctx['state'] ? '&state=' . urlencode($ctx['state']) : ''));
@@ -275,11 +278,19 @@ function oauthToken(): void
         if (!$row || strtotime($row['expires_at']) < time()) {
             fail(40001, '授权码无效或已过期', 400);
         }
-        if ($row['client_id'] !== $clientId || $row['redirect_uri'] !== $redirectUri) {
-            fail(40001, '授权码与应用/回调不匹配', 400);
+        if ($row['client_id'] !== $clientId) {
+            fail(40001, '授权码与应用不匹配', 400);
         }
-        // 标记已用
-        db()->prepare('UPDATE oauth_codes SET used = 1 WHERE code = ?')->execute([$code]);
+        // redirect_uri 校验：RFC 6749 允许省略（仅当授权请求带过时才必须一致）
+        if ($redirectUri !== '' && $row['redirect_uri'] !== $redirectUri) {
+            fail(40001, '授权码与回调不匹配', 400);
+        }
+        // 原子标记已用，防并发重放（UPDATE 影响 0 行 = 已被抢兑）
+        $upd = db()->prepare('UPDATE oauth_codes SET used = 1 WHERE code = ? AND used = 0');
+        $upd->execute([$code]);
+        if ($upd->rowCount() === 0) {
+            fail(40001, '授权码无效或已过期', 400);
+        }
         issueTokens($app, $row['user_id'], $row['scopes']);
     } elseif ($grantType === 'refresh_token') {
         $refresh = param('refresh_token', '');

@@ -23,30 +23,6 @@ if (($_POST['action'] ?? '') === 'test_email') {
     }
 }
 
-// 分批保存配置
-if (($_POST['action'] ?? '') === 'save') {
-    $values = $_POST['cfg'] ?? [];
-    $st = $db->prepare('REPLACE INTO settings (skey, svalue) VALUES (?,?)');
-    foreach ($values as $k => $v) {
-        if (is_string($k) && $k !== '') {
-            $st->execute([$k, trim((string)$v)]);
-        }
-    }
-    // 清理无效 key
-    // 配置已变更，递增版本号使 Redis 缓存失效
-    try {
-        if (function_exists('redis') && function_exists('rk')) {
-            redis()->incr(rk('cfg:ver'));
-        }
-    } catch (Throwable $e) {
-        // Redis 不可用不影响保存
-    }
-    header('Location: settings.php?msg=saved');
-    exit;
-}
-
-$msg = $_GET['msg'] ?? '';
-
 // 可配置项定义（键 => [标签, 说明, 是否密码]
 $defs = [
     'imgbb_key'           => ['图床 IMGBB Key', '用户头像图床上传', false],
@@ -71,6 +47,34 @@ $defs = [
     'smtp_from_name'      => ['发件人显示名', '默认 Auth Center', false],
 ];
 
+// 分批保存配置
+if (($_POST['action'] ?? '') === 'save') {
+    $values = $_POST['cfg'] ?? [];
+    $st = $db->prepare('REPLACE INTO settings (skey, svalue) VALUES (?,?)');
+    foreach ($values as $k => $v) {
+        if (is_string($k) && $k !== '') {
+            $v = trim((string)$v);
+            // 密码字段留空 = 保持原值（不回显、不覆盖）
+            $isPwd = isset($defs[$k][2]) && $defs[$k][2];
+            if ($isPwd && $v === '') continue;
+            $st->execute([$k, $v]);
+        }
+    }
+    // 清理无效 key
+    // 配置已变更，递增版本号使 Redis 缓存失效
+    try {
+        if (function_exists('redis') && function_exists('rk')) {
+            redis()->incr(rk('cfg:ver'));
+        }
+    } catch (Throwable $e) {
+        // Redis 不可用不影响保存
+    }
+    header('Location: settings.php?msg=saved');
+    exit;
+}
+
+$msg = $_GET['msg'] ?? '';
+
 // 读取当前值
 $cur = [];
 $st = $db->query('SELECT skey, svalue FROM settings');
@@ -94,7 +98,11 @@ contentOpen('系统设置', '敏感配置已从代码迁移到此处，修改即
         <div style="font-size:12px; opacity:.6; margin-bottom:10px;"><?= htmlspecialchars($desc) ?> · <code style="opacity:.7;"><?= htmlspecialchars($key) ?></code></div>
         <mdui-text-field
           name="cfg[<?= htmlspecialchars($key) ?>]"
+          <?php if ($isPwd): ?>
+          placeholder="<?= !empty($cur[$key]) ? '已设置（留空保持不变）' : '未设置' ?>"
+          <?php else: ?>
           value="<?= htmlspecialchars($cur[$key] ?? '') ?>"
+          <?php endif; ?>
           <?= $isPwd ? 'type="password"' : '' ?>
           clearable full-width
           <?= $isPwd ? 'toggle-password' : '' ?>></mdui-text-field>

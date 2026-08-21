@@ -112,11 +112,6 @@ document.getElementById('btnTopup').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount_yuan: parseFloat(amt), channel: getChannelVal() }),
     });
-    const r = await fetch('/api/balance/recharge/prepare', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount_yuan: amount, channel }),
-    });
     const d = await r.json();
     if (r.ok) {
       const p = d;

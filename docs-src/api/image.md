@@ -48,7 +48,7 @@
 ### 示例（multipart）
 
 ```bash
-curl -X POST https://auth.sanhe.com.mp/api/image/upload_app \
+curl -X POST <AUTH_SERVER>/api/image/upload_app \
   -F "client_id=你的client_id" \
   -F "client_secret=你的client_secret" \
   -F "tier=30d" \
@@ -58,7 +58,7 @@ curl -X POST https://auth.sanhe.com.mp/api/image/upload_app \
 ### 示例（base64）
 
 ```bash
-curl -X POST https://auth.sanhe.com.mp/api/image/upload_app \
+curl -X POST <AUTH_SERVER>/api/image/upload_app \
   -F "client_id=你的client_id" \
   -F "client_secret=你的client_secret" \
   -F "tier=1d" \

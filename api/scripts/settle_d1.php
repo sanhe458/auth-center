@@ -1,7 +1,7 @@
 <?php
 /**
  * D+1 结算 CLI：把所有满 24 小时的待结算明细滚进可提现
- * 用法：php /var/www/auth.sanhe.com.mp/api/scripts/settle_d1.php
+ * 用法：php /path/to/auth-center/api/scripts/settle_d1.php
  * crontab 建议：每小时执行一次（满 24h 才结算）
  */
 require_once __DIR__ . '/../lib/db.php';

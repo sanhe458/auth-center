@@ -3,6 +3,7 @@
  * 管理后台 · 令牌管理
  */
 require_once __DIR__ . '/../api/lib/db.php';
+require_once __DIR__ . '/../api/lib/redis.php';
 require_once __DIR__ . '/../api/lib/helpers.php';
 require_once __DIR__ . '/../api/lib/page.php';
 
@@ -12,6 +13,13 @@ $db = db();
 // 吊销令牌
 if (($_POST['action'] ?? '') === 'revoke') {
     $tokId = (int)($_POST['token_id'] ?? 0);
+    // 先取 token hash 清 Redis 缓存，再吊销（否则缓存期内令牌仍有效）
+    $st = $db->prepare('SELECT access_token_hash FROM oauth_tokens WHERE id = ? LIMIT 1');
+    $st->execute([$tokId]);
+    $hash = $st->fetchColumn();
+    if ($hash) {
+        try { redis()->del(rk('tok:' . $hash)); } catch (Throwable $e) {}
+    }
     $db->prepare('UPDATE oauth_tokens SET revoked = 1 WHERE id = ?')->execute([$tokId]);
     header('Location: tokens.php');
     exit;

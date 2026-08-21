@@ -157,17 +157,17 @@ function giteeCallback(): void
         exit;
     }
 
-    // ⑧ 同邮箱本地账号自动绑定
+    // ⑧ 同邮箱本地账号自动绑定（仅限正常状态账号）
     if ($email) {
-        $st = $db->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
+        $st = $db->prepare('SELECT id, status, nickname FROM users WHERE email = ? LIMIT 1');
         $st->execute([$email]);
         $local = $st->fetch();
-        if ($local) {
+        if ($local && (int)$local['status'] === 1) {
             $db->prepare('INSERT INTO social_bindings (user_id, provider, social_uid, nickname, avatar) VALUES (?,?,?,?,?)')
                 ->execute([$local['id'], 'gitee', $giteeId, $nickname, $avatar]);
             session_regenerate_id(true);
             $_SESSION['user_id']  = (int)$local['id'];
-            $_SESSION['nickname'] = (new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS))->query('SELECT nickname FROM users WHERE id=' . (int)$local['id'])->fetchColumn();
+            $_SESSION['nickname'] = $local['nickname'];
             header('Location: ' . APP_BASE . '/user/index.php');
             exit;
         }

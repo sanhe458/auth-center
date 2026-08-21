@@ -29,6 +29,9 @@ function rateLimit(string $bucket, int $max, int $windowSec): bool
     if ($c === 1) {
         // 首次计数，设置窗口过期
         $r->expire($key, $windowSec);
+    } elseif ($r->ttl($key) < 0) {
+        // 上次 expire 因进程中断未生效 → 补设，防 key 永久残留
+        $r->expire($key, $windowSec);
     }
     return $c <= $max;
 }

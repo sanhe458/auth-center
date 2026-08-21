@@ -116,8 +116,19 @@ function appsUpdate(): void
     ] as $input => $col) {
         $v = param($input);
         if ($v !== null) {
+            $v = trim((string)$v);
+            // 与创建时一致的格式校验
+            if ($input === 'name' && (mb_strlen($v) < 2 || mb_strlen($v) > 30)) {
+                fail(42001, '应用名称需 2-30 个字符', 400);
+            }
+            if ($input === 'callback_url' && !preg_match('#^https?://#i', $v)) {
+                fail(42002, '回调地址需以 http:// 或 https:// 开头', 400);
+            }
+            if ($input === 'homepage' && $v !== '' && filter_var($v, FILTER_VALIDATE_URL) === false) {
+                fail(42003, '应用主页格式不正确', 400);
+            }
             $fields[] = "$col = ?";
-            $values[] = trim((string)$v);
+            $values[] = $v;
         }
     }
     if ($fields) {

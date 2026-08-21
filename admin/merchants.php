@@ -25,7 +25,7 @@ if (($_POST['action'] ?? '') === 'create') {
             $key = genPayKey();
             $db->prepare('INSERT INTO pay_merchants (pid, name, key_plain) VALUES (?,?,?)')
                 ->execute([$pid, $name, $key]);
-            $msg = "商户已创建 &nbsp;<b>{$name}</b>&nbsp;（pid: <code>{$pid}</code>）<br>MD5 密钥（请复制保存）：<br><code style=\"user-select:all;\">{$key}</code>";
+            $msg = "商户已创建 &nbsp;<b>" . htmlspecialchars($name) . "</b>&nbsp;（pid: <code>{$pid}</code>）<br>MD5 密钥（请复制保存）：<br><code style=\"user-select:all;\">{$key}</code>";
         } catch (Throwable $e) {
             $err = '创建失败：' . $e->getMessage();
         }
@@ -113,7 +113,7 @@ contentOpen('商户管理', '易支付兼容收款 · 分配商户ID与密钥');
 <?php endforeach; endif; ?>
 
 <div style="font-size:12px;opacity:.55;line-height:1.8;margin-top:8px;">
-  对接说明：第三方系统（任何支持易支付的程序）将收款接口地址设为 <code>https://auth.sanhe.com.mp/mapi.php</code>（API下单）或 <code>submit.php</code>（页面跳转），
+  对接说明：第三方系统（任何支持易支付的程序）将收款接口地址设为 <code><?= htmlspecialchars(APP_BASE) ?>/mapi.php</code>（API下单）或 <code>submit.php</code>（页面跳转），
   商户ID填入上方 pid，密钥填入 MD5 密钥即可，协议与彩虹易支付 V1 完全兼容，无需修改代码。
 </div>
 

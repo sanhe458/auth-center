@@ -12,6 +12,7 @@ $size = max(40, min(512, $size));
 // 首字母（取第一个可见字符，中文取第一个字）
 $char = mb_substr(trim($name), 0, 1, 'UTF-8');
 if ($char === '') $char = '?';
+$char = htmlspecialchars($char, ENT_QUOTES, 'UTF-8');
 
 // 稳定 hash 选渐变（品牌橙 + 搭配色系）
 $h = crc32($seed);

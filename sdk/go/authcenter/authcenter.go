@@ -32,7 +32,7 @@ import (
 	"time"
 )
 
-const DefaultBaseURL = "https://auth.sanhe.com.mp"
+const DefaultBaseURL = "https://<AUTH_SERVER>"
 
 // Config SDK 配置
 type Config struct {

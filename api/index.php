@@ -23,7 +23,11 @@ require_once __DIR__ . '/controllers/image.php';
 require_once __DIR__ . '/controllers/captcha.php';
 
 // CORS：仅允许白名单域名（反射任意 Origin + credentials 是漏洞）
-$allowedOrigins = ['https://auth.sanhe.com.mp', 'https://demo.sanhe.com.mp'];
+// 默认取 APP_BASE（config.php），可用后台配置 cors_origins（逗号分隔）追加额外域名
+$allowedOrigins = array_values(array_unique(array_filter([
+    APP_BASE,
+    ...array_map('trim', explode(',', (string)cfg('cors_origins', ''))),
+])));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);
@@ -164,6 +168,11 @@ try {
                 case 'status':          imageStatus(); break;
                 case 'unlock_prepare':  imageUnlockPrepare(); break;
                 case 'unlock_confirm':  imageUnlockConfirm(); break;
+                case 'unlock_notify':
+                    // 图床解锁订单异步通知：解锁由 unlock_confirm 完成，这里仅回执 success
+                    http_response_code(200);
+                    echo 'success';
+                    break;
                 default: fail(40000, '未知图床操作', 404);
             }
             break;

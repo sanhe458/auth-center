@@ -223,7 +223,7 @@ devSidebar('devapps');
     <mdui-card class="form-card" variant="elevated">
       <div class="sec-title" style="margin:0 0 16px;">易支付收款</div>
       <div style="font-size:12.5px; opacity:.65; margin-bottom:14px; line-height:1.7;">
-        对接地址 <code style="user-select:all;">https://auth.sanhe.com.mp/</code>，填入下方商户ID和密钥即可，协议与彩虹易支付 V1 完全兼容。
+        对接地址 <code style="user-select:all;"><?= htmlspecialchars(APP_BASE) ?>/</code>，填入下方商户ID和密钥即可，协议与彩虹易支付 V1 完全兼容。
       </div>
       <div class="form-field">
         <mdui-text-field readonly label="商户ID (pid)" icon="storefront--outlined" value="<?= htmlspecialchars($merchant['pid']) ?>" full-width></mdui-text-field>

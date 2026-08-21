@@ -3,7 +3,7 @@
 所有接口的基础地址：
 
 ```
-https://auth.sanhe.com.mp/api
+<AUTH_SERVER>/api
 ```
 
 ## 认证方式

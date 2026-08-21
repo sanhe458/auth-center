@@ -189,7 +189,7 @@ function githubCallback(): void
         }
     }
 
-    if ((int)$user['status'] !== 1 && !empty($user['status'])) {
+    if ((int)$user['status'] !== 1) {
         header('Location: ' . APP_BASE . '/login.php?error=account_disabled');
         exit;
     }

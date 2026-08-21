@@ -43,7 +43,7 @@ function requireToken(): array
         'app_id'  => (int)$row['app_id'],
         'scope'   => $row['scopes'],
     ];
-    redis()->setex(rk('tok:' . $hash), max(60, strtotime($row['access_expires_at']) - time()), json_encode($ctx));
+    redis()->setex(rk('tok:' . $hash), max(1, strtotime($row['access_expires_at']) - time()), json_encode($ctx));
     return $ctx;
 }
 
@@ -146,6 +146,7 @@ function tokenStillValid(array $ctx): bool
     if (!$row) return false;
     if ((int)$row['us'] !== 1) return false;                    // 用户被禁用
     if ((int)$row['ast'] === 3) return false;                   // 应用被吊销
-    if ($row['az'] !== null && (int)$row['az'] !== 1) return false; // 授权被撤回
+    // 授权被撤回（status=0）或授权记录不存在（NULL）都视为无效
+    if ((int)$row['az'] !== 1) return false;
     return true;
 }

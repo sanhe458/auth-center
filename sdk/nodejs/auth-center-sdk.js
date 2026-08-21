@@ -32,7 +32,7 @@ class AuthCenterError extends Error {
 }
 
 class AuthCenter {
-  constructor({ client_id, client_secret, redirect_uri, base_url = 'https://auth.sanhe.com.mp' }) {
+  constructor({ client_id, client_secret, redirect_uri, base_url = 'https://<AUTH_SERVER>' }) {
     this.baseUrl = base_url.replace(/\/$/, '');
     this.clientId = client_id;
     this.clientSecret = client_secret;

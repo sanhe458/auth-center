@@ -2,11 +2,11 @@
 
 接入 Auth Center 统一登录的多语言示例代码。
 
-**服务地址**：`https://auth.sanhe.com.mp`
+**服务地址**：`<AUTH_SERVER>`
 
 ## 快速开始
 
-1. 在[控制台](https://auth.sanhe.com.mp/user/app-create.php)注册应用，拿到 `client_id` 和 `client_secret`
+1. 在[控制台](<AUTH_SERVER>/user/app-create.php)注册应用，拿到 `client_id` 和 `client_secret`
 2. 按你的语言选择目录：
    - [PHP](php/)
    - [Python](python/)
@@ -39,7 +39,7 @@
 所有 SDK 只需配置 4 个参数：
 
 ```text
-base_url       = https://auth.sanhe.com.mp
+base_url       = <AUTH_SERVER>
 client_id      = 你的应用ID
 client_secret  = 你的应用密钥
 redirect_uri   = 你的回调地址
@@ -49,4 +49,4 @@ redirect_uri   = 你的回调地址
 
 ## 完整对接文档
 
-见 [Auth Center 文档](https://auth.sanhe.com.mp/docs/)。
+见 [Auth Center 文档](<AUTH_SERVER>/docs/)。

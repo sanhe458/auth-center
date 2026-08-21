@@ -20,7 +20,7 @@ sdk = AuthCenter(
     client_id='你的client_id',
     client_secret='***',
     redirect_uri='http://127.0.0.1:5000/callback',
-    # base_url='https://auth.sanhe.com.mp',  # 默认就是这个
+    # base_url='https://<AUTH_SERVER>',  # 默认就是这个
 )
 SCOPE = 'basic'
 # ==============================

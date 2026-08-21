@@ -16,8 +16,8 @@ if ($me) {
     if ($next) {
         if (str_starts_with($next, '/') && !str_starts_with($next, '//')) {
             $safe = true; // 相对路径
-        } elseif (str_starts_with($next, 'https://auth.sanhe.com.mp')) {
-            $safe = true; // 本站完整 URL
+        } elseif ($next === APP_BASE || str_starts_with($next, APP_BASE . '/')) {
+            $safe = true; // 本站完整 URL（精确前缀，防 .evil.com 绕过）
         }
     }
     header('Location: ' . ($safe ? $next : '/user/index.php'));
@@ -75,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($next) {
                 if (str_starts_with($next, '/') && !str_starts_with($next, '//')) {
                     $safe = true; // 相对路径
-                } elseif (str_starts_with($next, 'https://auth.sanhe.com.mp')) {
-                    $safe = true; // 本站完整 URL
+                } elseif ($next === APP_BASE || str_starts_with($next, APP_BASE . '/')) {
+                    $safe = true; // 本站完整 URL（精确前缀，防 .evil.com 绕过）
                 }
             }
             header('Location: ' . ($safe ? $next : '/user/index.php'));

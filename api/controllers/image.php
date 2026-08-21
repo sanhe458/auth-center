@@ -209,8 +209,8 @@ function imageUnlockPrepare(): void
             ->execute([
                 $merchant['pid'], $outTradeNo, $tradeNo, 'balance',
                 '图床永久解锁', $amountFen,
-                'https://auth.sanhe.com.mp/api/image/unlock_notify',
-                'https://auth.sanhe.com.mp/',
+                APP_BASE . '/api/image/unlock_notify',
+                APP_BASE . '/',
             ]);
     } catch (Throwable $e) {
         fail(44009, '创建订单失败', 500);
@@ -235,13 +235,17 @@ function imageUnlockConfirm(): void
     $tradeNo = trim(param('order_no', ''));
     if (!$tradeNo) fail(44010, '缺少订单号', 400);
 
-    // 校验订单：属于该用户、已支付、且是图床解锁订单
+    // 校验订单：属于该用户、已支付、且必须是图床解锁订单（防用任意订单白嫖解锁）
     $st = db()->prepare('SELECT * FROM pay_orders WHERE trade_no = ? LIMIT 1');
     $st->execute([$tradeNo]);
     $o = $st->fetch();
     if (!$o) fail(44011, '订单不存在', 404);
     if ((int)$o['status'] !== 1) fail(44012, '订单未支付', 400);
     if ((int)$o['pay_user_id'] !== (int)$userId) fail(44013, '订单不属于当前用户', 403);
+    // 必须是图床解锁订单（out_trade_no=UNLOCK+uid、金额 1000 分）
+    if ($o['out_trade_no'] !== 'UNLOCK' . $userId || (int)$o['amount_fen'] !== 1000) {
+        fail(44014, '订单类型不正确，不能用于解锁', 400);
+    }
 
     $unlocked = imageUnlockPermanent((int)$userId);
     ok(['success' => true, 'permanent' => true, 'first_time' => $unlocked]);

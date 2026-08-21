@@ -155,7 +155,7 @@ function payOrderCreate(array $params): array
         )->execute([$pid, $outTradeNo, $tradeNo, $type, mb_substr($name, 0, 120), $amountFen, $notifyUrl, $returnUrl]);
     } catch (Throwable $e) {
         // 唯一键冲突：out_trade_no 重复
-        if ($e->getCode() === 23000) throw new PayException('商户订单号已存在');
+        if ((string)$e->getCode() === '23000') throw new PayException('商户订单号已存在');
         throw $e;
     }
 
