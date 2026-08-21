@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons)
 
     implementation(libs.okhttp)
+    implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
