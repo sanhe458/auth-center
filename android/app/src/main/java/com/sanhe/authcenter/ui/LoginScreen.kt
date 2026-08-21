@@ -63,12 +63,14 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
     var clientSecret by remember { mutableStateOf(vm.defaultClientSecret) }
     var redirectUri by remember { mutableStateOf(vm.defaultRedirectUri) }
 
-    // 配置从 DataStore 恢复后同步到输入框
+    // 配置从 DataStore 恢复后同步到输入框（仅当用户保存过配置时覆盖，避免清掉内置预填）
     LaunchedEffect(config) {
-        baseUrl = config.baseUrl
-        clientId = config.clientId
-        clientSecret = config.clientSecret
-        redirectUri = config.redirectUri
+        if (config.baseUrl.isNotBlank() || config.clientId.isNotBlank()) {
+            baseUrl = config.baseUrl
+            clientId = config.clientId
+            clientSecret = config.clientSecret
+            redirectUri = config.redirectUri
+        }
     }
 
     when (state) {
