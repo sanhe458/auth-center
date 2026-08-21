@@ -26,7 +26,7 @@ sequenceDiagram
 ## 1. 发起授权
 
 ```
-GET <AUTH_SERVER>/api/oauth/authorize
+GET https://auth.sanhe.com.mp/api/oauth/authorize
 ```
 
 ### 参数
@@ -81,7 +81,7 @@ token=xxxx&decision=allow
 ## 3. 换取令牌
 
 ```
-POST <AUTH_SERVER>/api/oauth/token
+POST https://auth.sanhe.com.mp/api/oauth/token
 Content-Type: application/json
 ```
 
@@ -133,7 +133,7 @@ Content-Type: application/json
 ## 4. 吊销令牌
 
 ```
-POST <AUTH_SERVER>/api/oauth/revoke
+POST https://auth.sanhe.com.mp/api/oauth/revoke
 Content-Type: application/json
 
 { "token": "要吊销的令牌" }

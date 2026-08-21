@@ -19,7 +19,7 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
 ```
                  ┌─────────────────────────────────────────┐
                  │              nginx (:80/:443)            │
-                 │  <AUTH_SERVER>    <DEMO_SERVER>  │
+                 │  auth.sanhe.com.mp    demo.sanhe.com.mp  │
                  └──────┬──────────────┬──────────┬─────────┘
                         │              │          │
               ┌─────────▼──┐   ┌───────▼──────┐   ▼
@@ -46,8 +46,8 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
 
 | 域名 | 用途 | 站点根目录 |
 |------|------|-----------|
-| <AUTH_SERVER> | 主站（认证/控制台/后台/文档/SDK） | /var/www/<AUTH_SERVER> |
-| <DEMO_SERVER> | SDK 演示站（独立会话隔离） | /var/www/<DEMO_SERVER> |
+| auth.sanhe.com.mp | 主站（认证/控制台/后台/文档/SDK） | /var/www/auth.sanhe.com.mp |
+| demo.sanhe.com.mp | SDK 演示站（独立会话隔离） | /var/www/demo.sanhe.com.mp |
 | api.sanhe.com.mp | 其他 API 服务（既有，不动） | /var/www/api.sanhe.com.mp |
 | call.sanhe.com.mp | 既有服务 | — |
 | gw.sanhe.com.mp | OpenClaw 网关 | — |
@@ -58,9 +58,9 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
 
 ## 四、nginx 配置
 
-配置文件：/etc/nginx/conf.d/<AUTH_SERVER>.conf、<DEMO_SERVER>.conf
+配置文件：/etc/nginx/conf.d/auth.sanhe.com.mp.conf、demo.sanhe.com.mp.conf
 
-<AUTH_SERVER> 关键配置：
+auth.sanhe.com.mp 关键配置：
 - 80 → 301 跳 443
 - `location ~ \.php$` → PHP-FPM 127.0.0.1:9000
 - `location /api/` → 重写 /api/index.php 路由
@@ -83,7 +83,7 @@ Auth Center 是一个自建的统一身份认证系统（聚合登录），提�
 | oauth_codes | 授权码 | code, 一次性, 10分钟过期 |
 | oauth_tokens | 令牌 | access/refresh hash, 2h/30d, revoked |
 
-## 六、后端 API（/var/www/<AUTH_SERVER>/api/）
+## 六、后端 API（/var/www/auth.sanhe.com.mp/api/）
 
 ```
 index.php          路由入口（/api/{controller}/{action}）
@@ -122,7 +122,7 @@ controllers/
 ## 七、页面结构（服务端渲染）
 
 ```
-/var/www/<AUTH_SERVER>/
+/var/www/auth.sanhe.com.mp/
 ├── index.php          首页（登录态感知）
 ├── login.php / register.php / oauth.php
 ├── avatar.php         占位头像生成器（SVG，?n=昵称&s=uid&size=）
@@ -179,17 +179,17 @@ controllers/
 **完整示例**：每个语言 examples/ 目录含可运行登录+回调 Demo
 **注意**：文档站 markdown 里 /sdk/ 链接必须写完整 URL（VitePress base=/docs/ 会加前缀）
 
-## 十一、演示站（<DEMO_SERVER>）
+## 十一、演示站（demo.sanhe.com.mp）
 
 - 用 PHP SDK 搭建的第三方应用示例，模拟真实接入
-- **独立域名原因**：原来放 <AUTH_SERVER>/demo/ 同域共用 session，demo 退出会把 Auth Center 会话一起清掉
+- **独立域名原因**：原来放 auth.sanhe.com.mp/demo/ 同域共用 session，demo 退出会把 Auth Center 会话一起清掉
 - 演示应用「SDK演示站」client_id（示例用，部署后自行到控制台注册）
 - 体验入口：/docs/guide/demo.html（文档站置顶）
 
 ## 十二、文档站（/docs/）
 
 VitePress，源码在 /root/.openclaw/workspace/auth-center/docs-src/
-**构建部署**：`npm run build` → 产物复制到 /var/www/<AUTH_SERVER>/docs/
+**构建部署**：`npm run build` → 产物复制到 /var/www/auth.sanhe.com.mp/docs/
 
 结构：在线体验 / 简介 / 快速对接(3步) / OAuth流程 / 示例代码 / 示例SDK / 应用与密钥管理 / API参考(总览/认证/用户/控制台/错误码)
 
@@ -210,7 +210,7 @@ VitePress，源码在 /root/.openclaw/workspace/auth-center/docs-src/
 
 - 测试用户：test@sanhe.com.mp（密码已重置）
 - 管理员：sanhe458@qq.com（密码用户自持，初始密码文件已失效）
-- 数据库：auth_center 账号，密码在 /var/www/<AUTH_SERVER>/api/config.php
+- 数据库：auth_center 账号，密码在 /var/www/auth.sanhe.com.mp/api/config.php
 - IMGBB_KEY：config.php
 - SECRET_PEPPER：config.php（随机生成）
 - Redis 前缀：ac:
@@ -232,7 +232,7 @@ VitePress，源码在 /root/.openclaw/workspace/auth-center/docs-src/
 - [ ] 无邮箱验证流程（注册即可用）
 - [ ] 无忘记密码流程（登录页按钮是占位的）
 - [ ] js/ 目录、shot.js、devserver.py 是静态版残留，可清理
-- [ ] auth-center 工作区（/root/.openclaw/workspace/auth-center/）是静态版，以 /var/www/<AUTH_SERVER> 为准
+- [ ] auth-center 工作区（/root/.openclaw/workspace/auth-center/）是静态版，以 /var/www/auth.sanhe.com.mp 为准
 
 ## 十七、相关服务
 

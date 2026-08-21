@@ -30,7 +30,7 @@ class AuthCenter
 
     public function __construct(array $config)
     {
-        $this->baseUrl      = rtrim($config['base_url'] ?? 'https://<AUTH_SERVER>', '/');
+        $this->baseUrl      = rtrim($config['base_url'] ?? 'https://auth.sanhe.com.mp', '/');
         $this->clientId     = $config['client_id'];
         $this->clientSecret = $config['client_secret'];
         $this->redirectUri  = $config['redirect_uri'];

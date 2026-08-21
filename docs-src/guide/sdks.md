@@ -5,7 +5,7 @@ Auth Center 提供多语言示例 SDK，覆盖主流后端语言，**零第三�
 所有 SDK 都放在：
 
 ```
-<AUTH_SERVER>/sdk/
+https://auth.sanhe.com.mp/sdk/
 ```
 
 ## 下载（ZIP 打包）
@@ -14,18 +14,18 @@ Auth Center 提供多语言示例 SDK，覆盖主流后端语言，**零第三�
 
 | 语言 | 下载 |
 |------|------|
-| 全语言总包 | [auth-center-sdk-all.zip](<AUTH_SERVER>/sdk/auth-center-sdk-all.zip) |
-| PHP | [auth-center-sdk-php.zip](<AUTH_SERVER>/sdk/auth-center-sdk-php.zip) |
-| Python | [auth-center-sdk-python.zip](<AUTH_SERVER>/sdk/auth-center-sdk-python.zip) |
-| Node.js | [auth-center-sdk-nodejs.zip](<AUTH_SERVER>/sdk/auth-center-sdk-nodejs.zip) |
-| Java | [auth-center-sdk-java.zip](<AUTH_SERVER>/sdk/auth-center-sdk-java.zip) |
-| Go | [auth-center-sdk-go.zip](<AUTH_SERVER>/sdk/auth-center-sdk-go.zip) |
+| 全语言总包 | [auth-center-sdk-all.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-all.zip) |
+| PHP | [auth-center-sdk-php.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-php.zip) |
+| Python | [auth-center-sdk-python.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-python.zip) |
+| Node.js | [auth-center-sdk-nodejs.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-nodejs.zip) |
+| Java | [auth-center-sdk-java.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-java.zip) |
+| Go | [auth-center-sdk-go.zip](https://auth.sanhe.com.mp/sdk/auth-center-sdk-go.zip) |
 
 每个 zip 内包含：SDK 源码 + `examples/` 完整可运行的登录示例。
 
 ## 在线浏览
 
-也可以直接在线查看源码：<AUTH_SERVER>/sdk/
+也可以直接在线查看源码：https://auth.sanhe.com.mp/sdk/
 
 ## 快速选择
 
@@ -54,7 +54,7 @@ Auth Center 提供多语言示例 SDK，覆盖主流后端语言，**零第三�
 ### 配置
 
 ```text
-base_url       = <AUTH_SERVER>
+base_url       = https://auth.sanhe.com.mp
 client_id      = 你的应用ID
 client_secret  = 你的应用密钥
 redirect_uri   = 你的回调地址

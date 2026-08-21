@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class AuthCenter {
 
-    private static final String BASE_URL = "https://<AUTH_SERVER>";
+    private static final String BASE_URL = "https://auth.sanhe.com.mp";
 
     private final String baseUrl;
     private final String clientId;

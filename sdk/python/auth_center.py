@@ -34,7 +34,7 @@ class AuthCenterError(Exception):
 
 
 class AuthCenter:
-    BASE_URL = 'https://<AUTH_SERVER>'
+    BASE_URL = 'https://auth.sanhe.com.mp'
 
     def __init__(self, client_id, client_secret, redirect_uri,
                  base_url=None, timeout=15):
