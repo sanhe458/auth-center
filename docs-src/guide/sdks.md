@@ -176,3 +176,29 @@ fmt.Printf("欢迎，%s！\n", user.Nickname)
 ## 完整示例
 
 每个 SDK 文件末尾都附带了完整的使用示例（含登录入口 + 回调处理 + state 校验），可以直接参考。
+
+## 安卓客户端（原生 App）
+
+Auth Center 还提供安卓原生客户端示例（Kotlin + Jetpack Compose），支持：
+
+- OAuth 2.0 授权码登录（WebView 内完成登录 + 授权，回调自动拦截，state 防 CSRF）
+- 用户信息展示（昵称 / 公开 uid / 邮箱）
+- access_token 2h 自动刷新（refresh_token 轮换），退出时吊销令牌
+- 应用 notify 权限发通知给当前用户
+
+源码在仓库 `android/` 目录（完整可构建的 Android Studio 工程）：
+
+| 项 | 值 |
+|----|----|
+| 包名 | `com.sanhe.authcenter` |
+| minSdk / targetSdk | 26 / 34 |
+| 构建 | `./gradlew :app:assembleDebug` |
+| 回调地址 | `authcenter://callback`（应用内可改） |
+
+**接入步骤：**
+
+1. 到开发者控制台注册应用，回调地址填 `authcenter://callback`，权限勾选 basic（必选）+ notify（可选）
+2. 打开 App 填入服务器地址（默认 `<AUTH_SERVER>`）、client_id、client_secret、回调地址
+3. 点「使用 AuthCenter 登录」→ 授权完成后自动进入主页
+
+> ⚠️ 与 Web SDK 不同，客户端 App 必须内置 client_secret（无法保密）。自用/内部场景可接受；对外分发建议后续扩展 PKCE 或中转后端。

@@ -163,7 +163,7 @@ controllers/
 - 占位头像：/avatar.php 动态 SVG，按 uid 稳定选 8 组渐变（品牌琥珀橙为主），无头像时全站显示
 - 品牌色：琥珀金→珊瑚橙渐变（#ffb74d→#ff7043），深色模式 OLED 纯黑（#000）
 
-## 十、多语言 SDK（/sdk/）
+## 十、多语言 SDK（/sdk/）+ 安卓客户端（/android/）
 
 5 语言，统一 5 方法：getAuthorizeUrl / exchangeCode / refreshToken / getUserInfo / revokeToken
 
@@ -174,10 +174,17 @@ controllers/
 | Node.js | auth-center-sdk.js | 无（Node18+ fetch） |
 | Java | AuthCenter.java | JDK11+（JSON 建议 Jackson） |
 | Go | authcenter/authcenter.go | 无 |
+| **安卓 App** | **android/（Kotlin+Compose）** | **Gradle 8.7 / AGP 8.5 / SDK 34** |
 
 **ZIP 下载**：/sdk/auth-center-sdk-{lang}.zip + all.zip（全语言总包 20KB）
 **完整示例**：每个语言 examples/ 目录含可运行登录+回调 Demo
 **注意**：文档站 markdown 里 /sdk/ 链接必须写完整 URL（VitePress base=/docs/ 会加前缀）
+
+**安卓客户端**（2026-08-21 新增，`android/` 完整 Android Studio 工程）：
+- 功能：OAuth 授权码登录（WebView 内授权、回调拦截、state 防 CSRF）、用户信息、token 自动刷新、退出吊销、notify 发信
+- 包名 `com.sanhe.authcenter`，minSdk 26 / targetSdk 34，构建 `./gradlew :app:assembleDebug`（本机已验证出 APK）
+- 回调地址默认 `authcenter://callback`，服务器/client_id/secret 应用内可配
+- 注意：App 内置 client_secret 无法保密，自用/内部场景可接受，对外分发需 PKCE 或中转后端
 
 ## 十一、演示站（demo.sanhe.com.mp）
 
