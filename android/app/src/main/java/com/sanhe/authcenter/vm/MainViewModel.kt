@@ -55,6 +55,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** 应用默认值（与 buildConfig 一致，供首次配置预填） */
     val defaultBaseUrl: String = BuildConfig.DEFAULT_BASE_URL
     val defaultRedirectUri: String = BuildConfig.DEFAULT_REDIRECT_URI
+    val defaultClientId: String = BuildConfig.DEFAULT_CLIENT_ID
+    val defaultClientSecret: String = BuildConfig.DEFAULT_CLIENT_SECRET
 
     init {
         viewModelScope.launch {
@@ -112,7 +114,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
         val state = generateState()
         val api = repo.apiFor(cfg.baseUrl)
-        val url = api.authorizeUrl(cfg.clientId, cfg.redirectUri, "basic notify", state)
+        val url = api.authorizeUrl(cfg.clientId, cfg.redirectUri, "basic,notify", state)
         _authState.value = AuthUiState.Authorizing(url, state)
         _error.value = null
     }
