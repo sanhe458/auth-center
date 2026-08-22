@@ -15,9 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -40,6 +37,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.sanhe.authcenter.ui.theme.Amber
 import com.sanhe.authcenter.ui.theme.Coral
 import com.sanhe.authcenter.ui.theme.DeepAmber
@@ -82,123 +81,137 @@ fun LoginScreen(vm: MainViewModel, state: AuthUiState) {
             )
         }
         else -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.height(32.dp))
-                BrandLogo()
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "AuthCenter",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    "统一身份认证 · 安卓客户端",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(28.dp))
+            Box(Modifier.fillMaxSize()) {
+                val backdrop = rememberLayerBackdrop()
+                AppGlassBackground(Modifier.layerBackdrop(backdrop))
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(Modifier.padding(20.dp)) {
-                        Text("服务器与应用配置", fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(12.dp))
-                        OutlinedTextField(
-                            value = baseUrl,
-                            onValueChange = { baseUrl = it },
-                            label = { Text("服务器地址") },
-                            placeholder = { Text(vm.defaultBaseUrl) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = clientId,
-                            onValueChange = { clientId = it },
-                            label = { Text("Client ID") },
-                            placeholder = { Text(vm.defaultClientId) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = clientSecret,
-                            onValueChange = { clientSecret = it },
-                            label = { Text("Client Secret") },
-                            placeholder = { Text("已内置，留空用官方应用") },
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = redirectUri,
-                            onValueChange = { redirectUri = it },
-                            label = { Text("回调地址") },
-                            placeholder = { Text(vm.defaultRedirectUri) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                vm.saveConfig(
-                                    baseUrl.ifBlank { vm.defaultBaseUrl },
-                                    clientId.ifBlank { vm.defaultClientId },
-                                    clientSecret.ifBlank { vm.defaultClientSecret },
-                                    redirectUri.ifBlank { vm.defaultRedirectUri }
-                                )
-                            },
-                            enabled = !loading,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("保存配置")
-                        }
-                    }
-                }
-
-                if (state is AuthUiState.LoggedOut) {
-                    Spacer(Modifier.height(20.dp))
-                    Button(
-                        onClick = vm::startLogin,
-                        enabled = !loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                    ) {
-                        Text("🔐 使用 AuthCenter 登录", fontSize = 16.sp)
-                    }
-                }
-
-                if (loading) {
-                    Spacer(Modifier.height(16.dp))
-                    CircularProgressIndicator(modifier = Modifier.size(28.dp))
-                }
-
-                error?.let {
+                    Spacer(Modifier.height(32.dp))
+                    BrandLogo()
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        it,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        "AuthCenter",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+                    Text(
+                        "统一身份认证 · 安卓客户端",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(28.dp))
+
+                    GlassCard(
+                        backdrop = backdrop,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Column(Modifier.padding(20.dp)) {
+                            Text("服务器与应用配置", fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = baseUrl,
+                                onValueChange = { baseUrl = it },
+                                label = { Text("服务器地址") },
+                                placeholder = { Text(vm.defaultBaseUrl) },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            OutlinedTextField(
+                                value = clientId,
+                                onValueChange = { clientId = it },
+                                label = { Text("Client ID") },
+                                placeholder = { Text(vm.defaultClientId) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            OutlinedTextField(
+                                value = clientSecret,
+                                onValueChange = { clientSecret = it },
+                                label = { Text("Client Secret") },
+                                placeholder = { Text("已内置，留空用官方应用") },
+                                singleLine = true,
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            OutlinedTextField(
+                                value = redirectUri,
+                                onValueChange = { redirectUri = it },
+                                label = { Text("回调地址") },
+                                placeholder = { Text(vm.defaultRedirectUri) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            GlassButton(
+                                backdrop = backdrop,
+                                onClick = {
+                                    vm.saveConfig(
+                                        baseUrl.ifBlank { vm.defaultBaseUrl },
+                                        clientId.ifBlank { vm.defaultClientId },
+                                        clientSecret.ifBlank { vm.defaultClientSecret },
+                                        redirectUri.ifBlank { vm.defaultRedirectUri }
+                                    )
+                                },
+                                enabled = !loading,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    "保存配置",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
+                    if (state is AuthUiState.LoggedOut) {
+                        Spacer(Modifier.height(20.dp))
+                        GlassButton(
+                            backdrop = backdrop,
+                            onClick = vm::startLogin,
+                            enabled = !loading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                        ) {
+                            Text(
+                                "🔐 使用 AuthCenter 登录",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    if (loading) {
+                        Spacer(Modifier.height(16.dp))
+                        CircularProgressIndicator(modifier = Modifier.size(28.dp))
+                    }
+
+                    error?.let {
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            it,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    Spacer(Modifier.height(24.dp))
                 }
-                Spacer(Modifier.height(24.dp))
             }
         }
     }

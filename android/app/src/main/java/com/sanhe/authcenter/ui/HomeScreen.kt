@@ -16,13 +16,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +36,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import coil.compose.AsyncImage
 import com.sanhe.authcenter.ui.theme.Amber
 import com.sanhe.authcenter.ui.theme.Coral
@@ -65,20 +63,22 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-        // ---- 用户卡片 ----
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+    Box(Modifier.fillMaxSize()) {
+        val backdrop = rememberLayerBackdrop()
+        AppGlassBackground(Modifier.layerBackdrop(backdrop))
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp)
         ) {
+            // ---- 用户卡片 ----
+            GlassCard(
+                backdrop = backdrop,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,12 +120,10 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
         Spacer(Modifier.height(16.dp))
 
         // ---- 令牌状态 ----
-        Card(
+        GlassCard(
+            backdrop = backdrop,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(Modifier.padding(16.dp)) {
                 Text("会话状态", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
@@ -145,12 +143,10 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
         Spacer(Modifier.height(16.dp))
 
         // ---- 通知发送 ----
-        Card(
+        GlassCard(
+            backdrop = backdrop,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            shape = RoundedCornerShape(20.dp)
         ) {
             Column(Modifier.padding(20.dp)) {
                 Text("发送通知（邮件）", fontWeight = FontWeight.SemiBold)
@@ -176,7 +172,8 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))
-                Button(
+                GlassButton(
+                    backdrop = backdrop,
                     onClick = { vm.sendNotify(title, body) },
                     enabled = !loading && title.isNotBlank() && body.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
@@ -188,7 +185,11 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
-                        Text("发送")
+                        Text(
+                            "发送",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
                 notifyResult?.let {
@@ -210,22 +211,38 @@ fun HomeScreen(vm: MainViewModel, state: AuthUiState.LoggedIn) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
+            GlassButton(
+                backdrop = backdrop,
                 onClick = vm::logout,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                tint = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                Text("退出登录")
+                Text(
+                    "退出登录",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-            OutlinedButton(
+            GlassButton(
+                backdrop = backdrop,
                 onClick = vm::refreshToken,
                 enabled = !loading,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
             ) {
-                Text("刷新令牌")
+                Text(
+                    "刷新令牌",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
 
         Spacer(Modifier.height(24.dp))
+        }
     }
 }
 
