@@ -76,13 +76,13 @@ pageHead('注册', '<link rel="stylesheet" href="/lib/captcha.css?v=' . (filemti
 
 <div class="page active" id="page-register">
   <div class="center-wrap">
-    <div class="auth-card" data-glass="container" data-glass-radius="24">
+    <div class="auth-card">
       <div class="brand">
         <div class="logo"><img src="/logo.svg" alt="Auth Center" style="width:100%;height:100%;border-radius:20px;"></div>
         <h1>Auth Center</h1>
         <p>统一身份认证 · 一个账号，通行所有应用</p>
       </div>
-      <mdui-card class="auth-card" variant="elevated" style="border-radius:24px;" data-glass="container" data-glass-radius="24">
+      <mdui-card class="auth-card" variant="elevated" style="border-radius:24px;">
         <div style="padding:24px;">
           <?php if ($error): ?>
           <mdui-alert severity="error" icon="error--outlined" style="margin-bottom:14px;"><?= htmlspecialchars($error) ?></mdui-alert>

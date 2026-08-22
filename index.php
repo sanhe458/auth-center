@@ -67,22 +67,22 @@ pageHead('统一身份认证');
 </div>
 
 <div class="features">
-  <div class="feat-card" data-glass="container" data-glass-radius="16">
+  <div class="feat-card">
     <div class="ic" style="background:rgba(255,167,38,.15); color:#ffb74d;"><mdui-icon name="verified_user--outlined"></mdui-icon></div>
     <div class="t">OAuth 2.0 认证</div>
     <div class="d">标准授权码流程，scope 权限粒度控制，授权页面可视化确认。</div>
   </div>
-  <div class="feat-card" data-glass="container" data-glass-radius="16">
+  <div class="feat-card">
     <div class="ic" style="background:rgba(255,167,38,.15); color:#ffb74d;"><mdui-icon name="apps--outlined"></mdui-icon></div>
     <div class="t">应用管理</div>
     <div class="d">注册应用、配置回调地址、管理权限范围，随时调整。</div>
   </div>
-  <div class="feat-card" data-glass="container" data-glass-radius="16">
+  <div class="feat-card">
     <div class="ic" style="background:rgba(255,167,38,.15); color:#ffb74d;"><mdui-icon name="key--outlined"></mdui-icon></div>
     <div class="t">密钥管理</div>
     <div class="d">应用密钥生成、吊销、轮换，密钥只显示一次，安全第一。</div>
   </div>
-  <div class="feat-card" data-glass="container" data-glass-radius="16">
+  <div class="feat-card">
     <div class="ic" style="background:rgba(255,167,38,.15); color:#ffb74d;"><mdui-icon name="palette--outlined"></mdui-icon></div>
     <div class="t">多端适配</div>
     <div class="d">桌面侧边栏导航，移动触屏优化，深浅色主题随心切换。</div>
