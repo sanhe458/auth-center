@@ -40,27 +40,27 @@ pageSidebar('index');
 contentOpen('总览', '欢迎回来，' . htmlspecialchars($user['nickname']) . '，管理你的账号与授权');
 ?>
     <div class="stat-grid">
-      <mdui-card class="stat-card" variant="elevated">
+      <mdui-card class="stat-card" data-glass="container" data-glass-radius="16" variant="elevated">
         <mdui-icon class="ic" name="verified_user--outlined"></mdui-icon>
         <div class="num"><?= $authCount ?></div>
         <div class="lbl">已授权应用</div>
       </mdui-card>
-      <mdui-card class="stat-card" variant="elevated">
+      <mdui-card class="stat-card" data-glass="container" data-glass-radius="16" variant="elevated">
         <mdui-icon class="ic" name="account_balance_wallet--outlined"></mdui-icon>
         <div class="num">¥ <?= number_format($balanceFen / 100, 2) ?></div>
         <div class="lbl">账户余额 · <a href="wallet.php" style="color:inherit;">去充值</a></div>
       </mdui-card>
-      <mdui-card class="stat-card" variant="elevated">
+      <mdui-card class="stat-card" data-glass="container" data-glass-radius="16" variant="elevated">
         <mdui-icon class="ic" name="history--outlined"></mdui-icon>
         <div class="num"><?= $revokedCount ?></div>
         <div class="lbl">已撤回授权</div>
       </mdui-card>
-      <mdui-card class="stat-card" variant="elevated">
+      <mdui-card class="stat-card" data-glass="container" data-glass-radius="16" variant="elevated">
         <mdui-icon class="ic" name="people--outlined"></mdui-icon>
         <div class="num"><?= $receivedCount ?></div>
         <div class="lbl">应用收到授权</div>
       </mdui-card>
-      <mdui-card class="stat-card" variant="elevated">
+      <mdui-card class="stat-card" data-glass="container" data-glass-radius="16" variant="elevated">
         <mdui-icon class="ic" name="person--outlined"></mdui-icon>
         <div class="num"><?= htmlspecialchars(mb_substr($user['nickname'], 0, 1)) ?></div>
         <div class="lbl"><?= htmlspecialchars($user['email']) ?></div>
@@ -74,7 +74,7 @@ contentOpen('总览', '欢迎回来，' . htmlspecialchars($user['nickname']) . 
     </div>
 
     <div class="sec-title" style="margin:26px 0 12px;">我授权的应用</div>
-    <mdui-card variant="elevated" style="border-radius:16px;">
+    <mdui-card variant="elevated" style="border-radius:16px;" data-glass="container" data-glass-radius="16">
       <mdui-list>
         <?php if (!$myAuths): ?>
         <mdui-list-item nonclickable>还没有授权过任何应用，去 [体验中心](/docs/guide/demo.html) 试试登录吧</mdui-list-item>

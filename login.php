@@ -93,7 +93,7 @@ pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css?v=' . (filemti
 
 <div class="page active" id="page-login">
   <div class="center-wrap">
-    <div class="auth-card">
+    <div class="auth-card" data-glass="container" data-glass-radius="24">
       <div class="brand">
         <div class="logo"><img src="/logo.svg" alt="Auth Center" style="width:100%;height:100%;border-radius:20px;"></div>
         <h1>Auth Center</h1>

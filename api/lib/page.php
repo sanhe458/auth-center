@@ -94,6 +94,7 @@ function pageHead(string $title, string $extraCss = ''): void
 <link rel="stylesheet" href="/lib/toast.css?v=' . (filemtime(__DIR__ . '/../../lib/toast.css') ?: 1) . '">
 <script src="/lib/theme.js?v=' . (filemtime(__DIR__ . '/../../lib/theme.js') ?: 1) . '"></script>
 <script src="/lib/toast.js?v=' . (filemtime(__DIR__ . '/../../lib/toast.js') ?: 1) . '"></script>
+<script src="/js/glass.js?v=' . (filemtime(__DIR__ . '/../../js/glass.js') ?: 1) . '"></script>
 </head>
 <body>';
 }

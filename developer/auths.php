@@ -33,7 +33,7 @@ contentOpen('收到的授权', '其他用户对你有应用授权的情况');
         <div style="margin-top:12px; opacity:.7;">你的应用还没有收到任何授权</div>
       </mdui-card>
       <?php else: foreach ($auths as $z): $active = (int)$z['status'] === 1; ?>
-      <div class="auth-card" style="background:rgb(var(--mdui-color-surface-container));">
+      <div class="auth-card" data-glass="container" data-glass-radius="20" style="background:rgb(var(--mdui-color-surface-container));">
         <mdui-avatar style="--mdui-avatar-size:42px; border-radius:14px; background:rgb(var(--mdui-color-surface-container-high));">
           <?php if (!empty($z['avatar'])): ?><img src="<?= htmlspecialchars($z['avatar']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;"><?php else: ?><mdui-icon name="person--outlined" style="font-size:20px;"></mdui-icon><?php endif; ?>
         </mdui-avatar>

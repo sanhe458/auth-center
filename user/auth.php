@@ -47,7 +47,7 @@ contentOpen('授权管理', '查看和管理你与应用之间的授权关系');
         <div style="margin-top:12px; opacity:.7;">还没有授权过任何应用</div>
       </mdui-card>
       <?php else: foreach ($myAuths as $z): $active = (int)$z['status'] === 1; ?>
-      <div class="auth-card" style="background:rgb(var(--mdui-color-surface-container));">
+      <div class="auth-card" data-glass="container" data-glass-radius="20" style="background:rgb(var(--mdui-color-surface-container));">
         <mdui-avatar style="--mdui-avatar-size:42px; border-radius:14px; background:rgb(var(--mdui-color-surface-container-high));">
           <mdui-icon name="<?= $active ? 'verified_user--outlined' : 'history--outlined' ?>" style="font-size:20px;"></mdui-icon>
         </mdui-avatar>
