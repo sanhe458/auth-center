@@ -83,19 +83,6 @@ body {
 .theme-toggle:hover { background: rgb(var(--mdui-color-surface-container-highest)); }
 .theme-toggle.fixed { position: fixed; top: 14px; right: 14px; z-index: 9999; }
 
-/* 液态玻璃模式（可选开启，Cookie glass_enabled=1）：DOM 卡片背景透明化，由 canvas 玻璃面板绘制 */
-body.glass-on [data-glass="container"] {
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-/* 玻璃开关按钮：位于主题切换按钮左侧 */
-.glass-toggle { margin-right: 6px; }
-.glass-toggle.fixed { position: fixed; top: 14px; right: 58px; z-index: 9999; }
-.glass-toggle.active { color: rgb(var(--mdui-color-primary-light)); }
-
 /* 授权页 */
 .oauth-app { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .oauth-app .app-logo {
