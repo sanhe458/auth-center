@@ -56,14 +56,23 @@ function moderationCheck(): void
 
     // 构造检测 prompt：0.6b 学不会 JSON 输出，改成只输出单个类别词（最快最稳）
     // 输出：porn / horror / profanity / pass，后端映射到模式规则并生成 reason
+    // 给 0.6b 加 few-shot 示例：单标签输出模型能学到边界
     $modeNote = $mode === 'strict'
         ? '脏话(profanity)也算违规'
         : '脏话不算违规，不要报 profanity';
-    $system = '你是内容安全检测器。判断文本类别，只输出一个英文词，不要输出其他任何内容：\n'
-        . '- 性内容(色情、性行为)→porn\n'
+    $system = '你是内容安全检测器。判断文本类别，只输出一个英文词，不要输出其他任何内容。\n'
+        . '规则：\n'
+        . '- 性内容(色情、性行为、性暗示)→porn\n'
         . '- 恐怖内容(杀人、血腥、鬼、灵异)→horror\n'
         . '- 脏话辱骂→profanity\n'
         . '- 无违规→pass\n'
+        . '示例：\n'
+        . '"我们来做爱" → porn\n'
+        . '"他下面硬了" → porn\n'
+        . '"这个女的姿势很黄" → porn\n'
+        . '"杀了你" → horror\n'
+        . '"你真是个傻逼" → ' . ($mode === 'strict' ? 'profanity' : 'pass') . '\n'
+        . '"今天天气不错" → pass\n'
         . '注意：' . $modeNote;
     $user = '文本：' . $text;
     $payload = [
@@ -140,11 +149,15 @@ function moderationCheck(): void
 function moderationKeywordCheck(string $text, string $mode): ?array
 {
     $porn = ['做爱', '色情', '性交', '性爱', '裸体', '自慰', '手淫', '鸡巴', '阴道', '阴茎', '卖淫', '嫖娼', '荡妇', '约炮', '三级片'];
-    $horror = ['杀人', '血腥', '尸体', '鬼', '灵异', '凶杀', '肢解', '碎尸', '割喉', '上吊', '灭门', '食人'];
+    $horror = ['杀人', '血腥', '尸体', '鬼', '灵异', '凶杀', '肢解', '碎尸', '割喉', '上吊', '灭门', '食人', '阴森', '恐怖'];
+    // 性暗示词：宽松模式也要拦截
+    $sex暗示 = ['下面硬了', '下面软了', '下面湿了', '下面出水', '硬了', '高潮', '性冲动', '性欲', '一发不可收拾'];
     $profanity = ['傻逼', '妈逼', '操你妈', '操你', '日你', '妈的', '混蛋', '王八蛋', '贱人', '卧槽', '去死', '草泥马', '狗日的', '婊子'];
 
     $hit = null;
     foreach ($porn as $w) { if (str_contains($text, $w)) { $hit = 'porn'; break; } }
+    // 性暗示词宽松模式也要拦
+    foreach ($sex暗示 as $w) { if (str_contains($text, $w)) { $hit = 'porn'; break; } }
     if (!$hit) { foreach ($horror as $w) { if (str_contains($text, $w)) { $hit = 'horror'; break; } } }
     // 脏话仅在严格模式下算违规；宽松模式普通脏话放行
     if (!$hit && $mode === 'strict') { foreach ($profanity as $w) { if (str_contains($text, $w)) { $hit = 'profanity'; break; } } }
