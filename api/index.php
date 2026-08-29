@@ -19,6 +19,7 @@ require_once __DIR__ . '/controllers/github.php';
 require_once __DIR__ . '/controllers/rainbow.php';
 require_once __DIR__ . '/controllers/gitee.php';
 require_once __DIR__ . '/controllers/notify.php';
+require_once __DIR__ . '/controllers/moderation.php';
 require_once __DIR__ . '/controllers/pay.php';
 require_once __DIR__ . '/controllers/app_balance.php';
 require_once __DIR__ . '/controllers/image.php';
@@ -156,6 +157,14 @@ try {
                 case 'send':          notifySend(); break;
                 case 'send_to_user':  notifySendToUser(); break;
                 default: fail(40000, '未知通知操作', 404);
+            }
+            break;
+
+        // 脏话检测（免费公开，IP 限频）
+        case 'moderation':
+            switch ($action) {
+                case 'check': moderationCheck(); break;
+                default: fail(40000, '未知检测操作', 404);
             }
             break;
 
