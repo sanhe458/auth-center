@@ -78,6 +78,7 @@ auth.sanhe.com.mp 关键配置：
 | users | 用户 | uid(公开), email, password_hash(bcrypt), avatar, role(user/admin), status, balance(余额/分), points(积分) |
 | balance_transactions | 余额流水 | user_id, type, amount(正入负出), balance_after, reference, remark |
 | points_transactions | 积分流水 | user_id, type, amount(正入负出), points_after, reference, remark |
+| checkins | 签到记录 | user_id, checkin_date(唯一), streak(连续天数), points(本次获得) |
 | apps | 应用 | client_id, client_secret_hash(HMAC-SHA256+pepper), owner_id, callback_url, status(1开发/2上线/3吊销) |
 | app_scopes | 应用权限 | app_id, scope(basic/netdisk/voice/notify) |
 | api_keys | 应用密钥 | key_prefix, key_hash, status, 每应用≤5有效 |
@@ -103,6 +104,7 @@ controllers/
   resource.php     Bearer 资源接口 + 授权管理
   balance.php      余额查询/流水/充值/卡密（balanceChange 事务封装）
   points.php       积分查询/流水（pointsChange 事务封装）
+  checkin.php      每日签到（7 天循环奖励 10/12/14/16/18/20/30）
 ```
 
 **接口清单**：
@@ -113,6 +115,7 @@ controllers/
 - 授权：/api/authorizations/list /revoke
 - 余额：/api/balance/info /transactions /recharge/prepare /recharge/notify /card/redeem
 - 积分：/api/points/info /transactions
+- 签到：/api/checkin/do /status
 - 资源：/api/info（Bearer 拿用户信息）
 - 其他：/api/health
 
