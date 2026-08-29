@@ -75,7 +75,9 @@ auth.sanhe.com.mp 关键配置：
 
 | 表 | 用途 | 关键字段 |
 |----|------|---------|
-| users | 用户 | uid(公开), email, password_hash(bcrypt), avatar, role(user/admin), status |
+| users | 用户 | uid(公开), email, password_hash(bcrypt), avatar, role(user/admin), status, balance(余额/分), points(积分) |
+| balance_transactions | 余额流水 | user_id, type, amount(正入负出), balance_after, reference, remark |
+| points_transactions | 积分流水 | user_id, type, amount(正入负出), points_after, reference, remark |
 | apps | 应用 | client_id, client_secret_hash(HMAC-SHA256+pepper), owner_id, callback_url, status(1开发/2上线/3吊销) |
 | app_scopes | 应用权限 | app_id, scope(basic/netdisk/voice/notify) |
 | api_keys | 应用密钥 | key_prefix, key_hash, status, 每应用≤5有效 |
@@ -99,6 +101,8 @@ controllers/
   apps.php         应用 CRUD
   keys.php         密钥管理
   resource.php     Bearer 资源接口 + 授权管理
+  balance.php      余额查询/流水/充值/卡密（balanceChange 事务封装）
+  points.php       积分查询/流水（pointsChange 事务封装）
 ```
 
 **接口清单**：
@@ -107,6 +111,8 @@ controllers/
 - 应用：/api/apps/list /create /update /delete
 - 密钥：/api/keys/list /create /revoke
 - 授权：/api/authorizations/list /revoke
+- 余额：/api/balance/info /transactions /recharge/prepare /recharge/notify /card/redeem
+- 积分：/api/points/info /transactions
 - 资源：/api/info（Bearer 拿用户信息）
 - 其他：/api/health
 
@@ -129,6 +135,8 @@ controllers/
 ├── user/              常规用户控制台
 │   ├── index.php      总览（已授权/已撤回/收到授权）
 │   ├── auth.php       授权管理
+│   ├── wallet.php     我的余额（充值/卡密/流水）
+│   ├── points.php     我的积分（积分卡片/流水）
 │   └── profile.php    个人设置（昵称/密码/头像上传）
 ├── developer/         开发者控制台
 │   ├── index.php      开发总览（应用/密钥/上线/授权统计）
@@ -139,7 +147,7 @@ controllers/
 │   └── key-create.php 生成密钥（每应用≤5）
 ├── admin/             管理后台（requireAdminPage）
 │   ├── index.php      仪表盘（6 项统计）
-│   ├── users.php      用户管理（禁用/设管理员）
+│   ├── users.php      用户管理（禁用/设管理员/调余额/调积分）
 │   ├── apps.php       应用管理（上线/吊销）
 │   ├── auths.php      授权管理（强制撤回）
 │   └── tokens.php     令牌管理（筛选/吊销）
