@@ -11,6 +11,7 @@ require_once __DIR__ . '/controllers/oauth.php';
 require_once __DIR__ . '/controllers/user.php';
 require_once __DIR__ . '/controllers/balance.php';
 require_once __DIR__ . '/controllers/points.php';
+require_once __DIR__ . '/controllers/checkin.php';
 require_once __DIR__ . '/controllers/apps.php';
 require_once __DIR__ . '/controllers/keys.php';
 require_once __DIR__ . '/controllers/resource.php';
@@ -114,6 +115,15 @@ try {
                 case 'info':         pointsInfo(); break;
                 case 'transactions': pointsTransactions(); break;
                 default: fail(40000, '未知积分操作', 404);
+            }
+            break;
+
+        // 签到
+        case 'checkin':
+            switch ($action) {
+                case 'do':     checkinDo(); break;
+                case 'status': checkinStatus(); break;
+                default: fail(40000, '未知签到操作', 404);
             }
             break;
 
