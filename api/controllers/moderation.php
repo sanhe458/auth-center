@@ -15,9 +15,12 @@ define('MODERATION_MAX_TEXT', 500);   // 单次检测文本最大长度
 define('MODERATION_RATE_MAX', 30);    // 每 IP 每分钟最多 30 次
 
 /**
- * POST /moderation/check  检测文本是否含脏话/违规内容
+ * POST/GET /moderation/check  检测文本是否含违规内容
  * 无需鉴权，仅 IP 限频
- * { text: "要检测的文本" }
+ * { text: "要检测的文本", mode?: "lenient"|"strict" }
+ *   lenient（默认）：只拦性和恐怖内容，普通脏话不拦
+ *   strict：性和恐怖 + 脏话辱骂都拦
+ * 省 token：通过时只回 {"flagged":false}，不输出理由（老手机 Token 慢）
  */
 function moderationCheck(): void
 {
@@ -29,17 +32,40 @@ function moderationCheck(): void
         fail(40001, '文本过长，最多 ' . MODERATION_MAX_TEXT . ' 字', 400);
     }
 
+    // 模式：lenient（宽松，默认） / strict（严格）
+    $mode = (string)param('mode', 'lenient');
+    if (!in_array($mode, ['lenient', 'strict'], true)) {
+        $mode = 'lenient';
+    }
+
     // IP 限频（防刷，宽松：30 次/分钟/IP）
     if (!rateLimit('moderation:' . clientIp(), MODERATION_RATE_MAX, 60)) {
         fail(40010, '请求过于频繁，请稍后再试', 429);
     }
 
-    // 构造检测 prompt：只输出 JSON，禁用思考
-    $system = '你是内容安全检测器。判断用户文本是否包含脏话、辱骂、色情、暴力或政治敏感内容。'
-        . '只输出一个 JSON 对象，格式：{"flagged":true或false,"category":"none或profanity或abuse或porn或politics或other","reason":"一句话说明"}'
-        . '。不要输出其他任何内容。';
-    $user = '请检测以下文本：' . $text;
+    // ① 关键词表先行：命中直接返回（快、准、不调模型）；宽松模式跳过脏话
+    $kw = moderationKeywordCheck($text, $mode);
+    if ($kw) {
+        $kw['mode'] = $mode;
+        $kw['text'] = $text;
+        ok($kw);
+        return;
+    }
 
+    // ② 关键词未命中 → 调模型单标签分类兜底
+
+    // 构造检测 prompt：0.6b 学不会 JSON 输出，改成只输出单个类别词（最快最稳）
+    // 输出：porn / horror / profanity / pass，后端映射到模式规则并生成 reason
+    $modeNote = $mode === 'strict'
+        ? '脏话(profanity)也算违规'
+        : '脏话不算违规，不要报 profanity';
+    $system = '你是内容安全检测器。判断文本类别，只输出一个英文词，不要输出其他任何内容：\n'
+        . '- 性内容(色情、性行为)→porn\n'
+        . '- 恐怖内容(杀人、血腥、鬼、灵异)→horror\n'
+        . '- 脏话辱骂→profanity\n'
+        . '- 无违规→pass\n'
+        . '注意：' . $modeNote;
+    $user = '文本：' . $text;
     $payload = [
         'model'    => MODERATION_LLM_MODEL,
         'messages' => [
@@ -47,7 +73,7 @@ function moderationCheck(): void
             ['role' => 'user',   'content' => $user],
         ],
         'temperature' => 0.1,
-        'max_tokens'  => 120,
+        'max_tokens'  => 16,
         // 关闭思考（三河要求：老手机顶不住 reasoning）
         'chat_template_kwargs' => ['enable_thinking' => false],
     ];
@@ -79,54 +105,96 @@ function moderationCheck(): void
         fail(50002, '检测服务无响应', 502);
     }
 
-    // 解析模型输出的 JSON（可能带 ```json 包裹或前后杂文本）
-    $result = moderationParseJson($content);
+    // 模型只输出一个类别词，提取并映射
+    $label = moderationExtractLabel($content);
+    $result = moderationLabelToResult($label, $mode);
     if (!$result) {
-        // 模型没按 JSON 输出：保守起见按违规处理，让调用方人工判断
-        error_log('[moderation] JSON 解析失败, raw=' . substr($content, 0, 300));
+        // 模型输出了无法识别的词：保守放行 + 标记人工复核（不输出 reason）
+        error_log('[moderation] 无法识别输出, raw=' . substr($content, 0, 200));
         ok([
             'flagged'  => false,
             'category' => 'none',
-            'reason'   => '检测结果无法解析，请人工复核',
-            'raw'      => $content,
+            'mode'     => $mode,
+            'text'     => $text,
         ]);
         return;
     }
 
-    ok([
-        'flagged'  => (bool)($result['flagged'] ?? false),
-        'category' => (string)($result['category'] ?? 'other'),
-        'reason'   => (string)($result['reason'] ?? ''),
+    $out = [
+        'flagged'  => $result['flagged'],
+        'category' => $result['category'],
+        'mode'     => $mode,
         'text'     => $text,
-    ]);
+    ];
+    // 通过时不带 reason，只有拦截时才输出理由（省 token）
+    if ($result['flagged']) {
+        $out['reason'] = $result['reason'];
+    }
+    ok($out);
 }
 
 /**
- * 从模型输出里抠 JSON（支持 ```json 代码块 / 前后杂文本）
+ * 关键词表（本地命中，不调模型）：确定性违禁词直接拦截
+ * 返回 null 表示未命中，需交给模型
  */
-function moderationParseJson(string $raw): ?array
+function moderationKeywordCheck(string $text, string $mode): ?array
 {
-    // 去掉 ```json ... ``` 包裹
-    if (preg_match('/```(?:json)?\s*(\{.*?\})\s*```/s', $raw, $m)) {
-        $raw = $m[1];
-    } else {
-        // 直接找第一个 { 到最后一个 }
-        $start = strpos($raw, '{');
-        $end   = strrpos($raw, '}');
-        if ($start !== false && $end !== false && $end > $start) {
-            $raw = substr($raw, $start, $end - $start + 1);
-        }
-    }
+    $porn = ['做爱', '色情', '性交', '性爱', '裸体', '自慰', '手淫', '鸡巴', '阴道', '阴茎', '卖淫', '嫖娼', '荡妇', '约炮', '三级片'];
+    $horror = ['杀人', '血腥', '尸体', '鬼', '灵异', '凶杀', '肢解', '碎尸', '割喉', '上吊', '灭门', '食人'];
+    $profanity = ['傻逼', '妈逼', '操你妈', '操你', '日你', '妈的', '混蛋', '王八蛋', '贱人', '卧槽', '去死', '草泥马', '狗日的', '婊子'];
 
-    $d = json_decode($raw, true);
-    if (!is_array($d)) return null;
-    // 只保留合法字段
-    $category = (string)($d['category'] ?? 'other');
-    $allowed  = ['none', 'profanity', 'abuse', 'porn', 'politics', 'other'];
-    if (!in_array($category, $allowed, true)) $category = 'other';
-    return [
-        'flagged'  => (bool)($d['flagged'] ?? false),
-        'category' => $category,
-        'reason'   => (string)($d['reason'] ?? ''),
+    $hit = null;
+    foreach ($porn as $w) { if (str_contains($text, $w)) { $hit = 'porn'; break; } }
+    if (!$hit) { foreach ($horror as $w) { if (str_contains($text, $w)) { $hit = 'horror'; break; } } }
+    // 脏话仅在严格模式下算违规；宽松模式普通脏话放行
+    if (!$hit && $mode === 'strict') { foreach ($profanity as $w) { if (str_contains($text, $w)) { $hit = 'profanity'; break; } } }
+
+    if (!$hit) return null;
+    $reasonMap = [
+        'porn'      => '包含色情内容',
+        'horror'    => '包含恐怖暴力内容',
+        'profanity' => '包含脏话辱骂',
     ];
+    return ['flagged' => true, 'category' => $hit, 'reason' => $reasonMap[$hit]];
+}
+
+/**
+ * 从模型输出里提取类别标签（容忍换行/空格/小写/中文兜底）
+ */
+function moderationExtractLabel(string $content): string
+{
+    $content = strtolower(trim($content));
+    // 取第一个词/行
+    if (preg_match('/\b(porn|horror|profanity|pass)\b/', $content, $m)) {
+        return $m[1];
+    }
+    // 中文兜底
+    $zh = ['色情' => 'porn', '性' => 'porn', '恐怖' => 'horror', '血腥' => 'horror', '脏话' => 'profanity', '辱骂' => 'profanity', '正常' => 'pass', '通过' => 'pass', '无' => 'pass'];
+    foreach ($zh as $k => $v) {
+        if (str_contains($content, $k)) return $v;
+    }
+    return '';
+}
+
+/**
+ * 标签 + 模式 → 检测结果；宽松模式下 profanity 不算违规
+ */
+function moderationLabelToResult(string $label, string $mode): ?array
+{
+    $reasonMap = [
+        'porn'      => '包含色情内容',
+        'horror'    => '包含恐怖暴力内容',
+        'profanity' => '包含脏话辱骂',
+    ];
+    if ($label === 'pass') {
+        return ['flagged' => false, 'category' => 'none', 'reason' => ''];
+    }
+    if ($label === 'profanity' && $mode === 'lenient') {
+        // 宽松模式：普通脏话放行
+        return ['flagged' => false, 'category' => 'none', 'reason' => ''];
+    }
+    if (isset($reasonMap[$label])) {
+        return ['flagged' => true, 'category' => $label, 'reason' => $reasonMap[$label]];
+    }
+    return null;
 }
