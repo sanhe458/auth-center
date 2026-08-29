@@ -33,6 +33,11 @@ $st = $db->prepare('SELECT balance FROM users WHERE id = ? LIMIT 1');
 $st->execute([$user['id']]);
 $balanceFen = (int)$st->fetch()['balance'];
 
+// 积分
+$st = $db->prepare('SELECT points FROM users WHERE id = ? LIMIT 1');
+$st->execute([$user['id']]);
+$points = (int)$st->fetch()['points'];
+
 pageHead('总览', '<link rel="stylesheet" href="/css/user.css?v=20260817">');
 pageNav($user);
 echo '<div class="shell">';
@@ -49,6 +54,11 @@ contentOpen('总览', '欢迎回来，' . htmlspecialchars($user['nickname']) . 
         <mdui-icon class="ic" name="account_balance_wallet--outlined"></mdui-icon>
         <div class="num">¥ <?= number_format($balanceFen / 100, 2) ?></div>
         <div class="lbl">账户余额 · <a href="wallet.php" style="color:inherit;">去充值</a></div>
+      </mdui-card>
+      <mdui-card class="stat-card" variant="elevated">
+        <mdui-icon class="ic" name="stars--outlined"></mdui-icon>
+        <div class="num"><?= number_format($points) ?></div>
+        <div class="lbl">我的积分 · <a href="points.php" style="color:inherit;">明细</a></div>
       </mdui-card>
       <mdui-card class="stat-card" variant="elevated">
         <mdui-icon class="ic" name="history--outlined"></mdui-icon>

@@ -10,6 +10,7 @@ require_once __DIR__ . '/lib/helpers.php';
 require_once __DIR__ . '/controllers/oauth.php';
 require_once __DIR__ . '/controllers/user.php';
 require_once __DIR__ . '/controllers/balance.php';
+require_once __DIR__ . '/controllers/points.php';
 require_once __DIR__ . '/controllers/apps.php';
 require_once __DIR__ . '/controllers/keys.php';
 require_once __DIR__ . '/controllers/resource.php';
@@ -104,6 +105,15 @@ try {
                     else { fail(40000, '未知卡密操作', 404); }
                     break;
                 default: fail(40000, '未知余额操作', 404);
+            }
+            break;
+
+        // 积分
+        case 'points':
+            switch ($action) {
+                case 'info':         pointsInfo(); break;
+                case 'transactions': pointsTransactions(); break;
+                default: fail(40000, '未知积分操作', 404);
             }
             break;
 
