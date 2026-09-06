@@ -185,6 +185,8 @@ try {
             switch ($action) {
                 case 'pay':     payPay(); break;
                 case 'status':  payStatus(); break;
+                case 'channel': payChannel(); break;
+                case 'epay_notify': payEpayNotify(); break;
                 default: fail(40000, '未知支付操作', 404);
             }
             break;

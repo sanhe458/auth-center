@@ -303,3 +303,124 @@ function paySendNotify(string $tradeNo): bool
  * ============================================================ */
 
 class PayException extends RuntimeException {}
+
+/* ============================================================
+ * 7. 上游易支付对接（微信/支付宝收款，复用本机易支付商户）
+ *    配置：settings 表 epay_api_url / epay_key / epay_mch_id
+ * ============================================================ */
+
+/** 读上游易支付配置 */
+function payEpayConfig(): array
+{
+    $api = rtrim((string)cfg('epay_api_url', ''), '/');
+    $key = (string)cfg('epay_key', '');
+    $pid = (string)cfg('epay_mch_id', '');
+    if ($api === '' || $key === '' || $pid === '') {
+        throw new PayException('易支付通道未配置');
+    }
+    return [$api, $key, $pid];
+}
+
+/**
+ * 调上游易支付下单（微信/支付宝）
+ * @param array  $order   pay_orders 行
+ * @param string $channel wxpay | alipay
+ * @return array [qrcode 二维码图片URL, payurl 收银台URL, epayTradeNo 上游单号]
+ */
+function payEpayCreate(array $order, string $channel): array
+{
+    [$api, $key, $pid] = payEpayConfig();
+    if (!in_array($channel, ['wxpay', 'alipay'], true)) {
+        throw new PayException('不支持的支付方式');
+    }
+    $notifyUrl = APP_BASE . '/api/pay/epay_notify';
+    $returnUrl = APP_BASE . '/pay/index.php?order_no=' . urlencode($order['trade_no']);
+    $params = [
+        'pid'          => $pid,
+        'type'         => $channel,
+        'out_trade_no' => $order['trade_no'],
+        'notify_url'   => $notifyUrl,
+        'return_url'   => $returnUrl,
+        'name'         => $order['name'] ?: '订单 ' . $order['trade_no'],
+        'money'        => sprintf('%.2f', $order['amount_fen'] / 100),
+        'sign_type'    => 'MD5',
+    ];
+    $params['sign'] = paySign($params, $key);
+
+    $ch = curl_init($api . '/submit.php');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_POSTFIELDS     => http_build_query($params),
+        CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+    $resp = curl_exec($ch);
+    $err  = curl_error($ch);
+    $http = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+    if ($err || $http !== 200) {
+        throw new PayException('易支付通道请求失败：' . ($err ?: "HTTP $http"));
+    }
+    $data = json_decode((string)$resp, true);
+    if (is_array($data) && (int)($data['code'] ?? 0) === 1) {
+        // 标准易支付 JSON 响应
+        return [
+            'qrcode'     => (string)($data['qrcode'] ?? ''),
+            'payurl'     => (string)($data['payurl'] ?? ''),
+            'epay_trade' => (string)($data['trade_no'] ?? ''),
+        ];
+    }
+    // 兼容 HTML 跳转响应（如 17yf：window.location.replace('/cashier.php?trade_no=...')）
+    if (preg_match("#(?:location\.replace|location\.href|window\.location)\s*\(?\s*['\"]([^'\"]+?)['\"]#i", (string)$resp, $m)) {
+        $target = $m[1];
+        if (!preg_match('#^https?://#i', $target)) {
+            $target = $api . '/' . ltrim($target, '/');
+        }
+        return ['qrcode' => '', 'payurl' => $target, 'epay_trade' => ''];
+    }
+    throw new PayException('易支付下单失败：' . ($data['msg'] ?? '未知错误'));
+}
+
+/**
+ * 处理上游易支付异步回调（验签 → 标记已支付 → 商户加余额 → 通知商户）
+ * @return bool 是否应回 success（验签通过且业务处理成功）
+ */
+function payEpayHandleNotify(array $params): bool
+{
+    [$api, $key, $pid] = payEpayConfig();
+    // 商户号必须匹配本机配置
+    if (($params['pid'] ?? '') !== $pid) return false;
+    if (($params['trade_status'] ?? '') !== 'TRADE_SUCCESS') return false;
+    if (!payVerify($params, $key)) return false;
+
+    $tradeNo = (string)($params['out_trade_no'] ?? '');
+    $type    = (string)($params['type'] ?? '');
+    if ($tradeNo === '') return false;
+
+    $db = db();
+    $db->beginTransaction();
+    try {
+        $st = $db->prepare('SELECT * FROM pay_orders WHERE trade_no = ? FOR UPDATE');
+        $st->execute([$tradeNo]);
+        $order = $st->fetch();
+        if (!$order) { $db->rollBack(); return false; }
+        if ((int)$order['status'] === 1) { $db->rollBack(); return true; } // 幂等
+        if ((int)$order['status'] === 2) { $db->rollBack(); return false; }
+
+        $db->prepare('UPDATE pay_orders SET status = 1, paid_at = NOW(), type = ? WHERE trade_no = ?')
+            ->execute([$type ?: 'alipay', $tradeNo]);
+        // 上游真实收款 → 给商户记余额（付款人未知，pay_user_id 置空）
+        merchantBalanceChangeInTxn($order['pid'], 'income', (int)$order['amount_fen'], $tradeNo, null,
+            '易支付收款 ' . ($type ?: 'alipay'));
+        $db->commit();
+    } catch (Throwable $e) {
+        $db->rollBack();
+        error_log('[pay] 易支付回调处理失败: ' . $e->getMessage());
+        return false;
+    }
+
+    // 异步通知商户（尽力而为）
+    @paySendNotify($tradeNo);
+    return true;
+}
