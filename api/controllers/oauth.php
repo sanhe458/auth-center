@@ -37,8 +37,9 @@ function oauthAuthorize(): void
         oauthErrorRedirect($redirectUri, 'unauthorized_client', '应用不存在或未上线', $state);
         return;
     }
-    // 回调地址必须与注册一致
-    if ($redirectUri !== $app['callback_url']) {
+    // 回调地址必须与注册一致（支持逗号分隔多回调白名单）
+    $registered = array_values(array_filter(array_map('trim', explode(',', $app['callback_url']))));
+    if (!in_array($redirectUri, $registered, true)) {
         oauthErrorRedirect($app['callback_url'], 'invalid_request', 'redirect_uri 与注册地址不一致', $state);
         return;
     }

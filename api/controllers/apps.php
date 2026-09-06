@@ -67,9 +67,17 @@ function appsCreate(): void
     if (mb_strlen($name) < 2 || mb_strlen($name) > 30) {
         fail(42001, '应用名称需 2-30 个字符', 400);
     }
-    if (!preg_match('#^https?://#i', $cb)) {
-        fail(42002, '回调地址需以 http:// 或 https:// 开头', 400);
+    // 回调地址：支持逗号分隔多个（白名单式），每个需 http(s) 开头
+    $cbs = array_values(array_filter(array_map('trim', explode(',', $cb))));
+    if (!$cbs) {
+        fail(42002, '回调地址不能为空', 400);
     }
+    foreach ($cbs as $one) {
+        if (!preg_match('#^https?://#i', $one)) {
+            fail(42002, '回调地址需以 http:// 或 https:// 开头（多个用逗号分隔）', 400);
+        }
+    }
+    $cb = implode(',', $cbs);
     if (filter_var($home, FILTER_VALIDATE_URL) === false && $home !== '') {
         fail(42003, '应用主页格式不正确', 400);
     }
@@ -121,8 +129,18 @@ function appsUpdate(): void
             if ($input === 'name' && (mb_strlen($v) < 2 || mb_strlen($v) > 30)) {
                 fail(42001, '应用名称需 2-30 个字符', 400);
             }
-            if ($input === 'callback_url' && !preg_match('#^https?://#i', $v)) {
-                fail(42002, '回调地址需以 http:// 或 https:// 开头', 400);
+            if ($input === 'callback_url') {
+                // 多回调：逗号分隔，逐个校验
+                $cbs = array_values(array_filter(array_map('trim', explode(',', $v))));
+                if (!$cbs) {
+                    fail(42002, '回调地址不能为空', 400);
+                }
+                foreach ($cbs as $one) {
+                    if (!preg_match('#^https?://#i', $one)) {
+                        fail(42002, '回调地址需以 http:// 或 https:// 开头（多个用逗号分隔）', 400);
+                    }
+                }
+                $v = implode(',', $cbs);
             }
             if ($input === 'homepage' && $v !== '' && filter_var($v, FILTER_VALIDATE_URL) === false) {
                 fail(42003, '应用主页格式不正确', 400);
