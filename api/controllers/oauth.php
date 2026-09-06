@@ -19,6 +19,12 @@ function oauthAuthorize(): void
     $clientId     = param('client_id', '');
     $redirectUri  = param('redirect_uri', '');
     $scope        = param('scope', 'basic');
+    // OIDC 标准 scope（openid/profile/email）归一化为 basic：
+    // 授权页显示、授权记录、直过判断、token 回显统一为应用权限，避免出现英文 scope 裸词
+    $scope = implode(',', array_values(array_unique(array_filter(array_map(
+        fn($s) => in_array($s, ['openid', 'profile', 'email'], true) ? 'basic' : $s,
+        preg_split('/[\s,]+/', $scope)
+    )))));
     $state        = param('state', '');
 
     if ($responseType !== 'code') {
@@ -49,12 +55,10 @@ function oauthAuthorize(): void
     $st->execute([$app['id']]);
     $allowed = array_column($st->fetchAll(), 'scope');
     if (!in_array('basic', $allowed)) $allowed[] = 'basic';
-    $oidcScopeMap = ['openid' => 'basic', 'profile' => 'basic', 'email' => 'basic'];
-    // scope 兼容逗号和空格两种分隔（OIDC 标准用空格：openid profile）
-    $requested = array_filter(array_map('trim', preg_split('/[\s,]+/', $scope)));
+    // scope 已在入口归一化（openid/profile/email → basic），这里做最终白名单校验
+    $requested = array_filter(array_map('trim', explode(',', $scope)));
     foreach ($requested as $s) {
-        $need = $oidcScopeMap[$s] ?? $s;
-        if (!in_array($need, $allowed, true)) {
+        if (!in_array($s, $allowed, true)) {
             oauthErrorRedirect($redirectUri, 'invalid_scope', "权限 $s 应用未申请", $state);
             return;
         }
