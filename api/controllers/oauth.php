@@ -6,6 +6,7 @@ require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/redis.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/scopes.php';
+require_once __DIR__ . '/../lib/oidc.php';
 
 /**
  * GET /oauth/authorize
@@ -42,14 +43,17 @@ function oauthAuthorize(): void
         return;
     }
 
-    // 校验 scope 是否在应用权限内
+    // 校验 scope 是否在应用权限内（OIDC 标准 scope 映射为 basic，不要求应用显式申请）
     $st = db()->prepare('SELECT scope FROM app_scopes WHERE app_id = ?');
     $st->execute([$app['id']]);
     $allowed = array_column($st->fetchAll(), 'scope');
     if (!in_array('basic', $allowed)) $allowed[] = 'basic';
-    $requested = array_filter(array_map('trim', explode(',', $scope)));
+    $oidcScopeMap = ['openid' => 'basic', 'profile' => 'basic', 'email' => 'basic'];
+    // scope 兼容逗号和空格两种分隔（OIDC 标准用空格：openid profile）
+    $requested = array_filter(array_map('trim', preg_split('/[\s,]+/', $scope)));
     foreach ($requested as $s) {
-        if (!in_array($s, $allowed, true)) {
+        $need = $oidcScopeMap[$s] ?? $s;
+        if (!in_array($need, $allowed, true)) {
             oauthErrorRedirect($redirectUri, 'invalid_scope', "权限 $s 应用未申请", $state);
             return;
         }
@@ -333,13 +337,46 @@ function issueTokens(array $app, int $userId, string $scope): void
     ]));
 
     // token 端点按 OAuth 2.0 标准返回顶层字段（不做 code/data 包装）
-    jsonOut([
+    // OIDC：附带 RS256 签名的 id_token（access_token 保持不透明随机串，不破坏现有对接）
+    $out = [
         'access_token'  => $access,
         'token_type'    => 'Bearer',
         'expires_in'    => ACCESS_TOKEN_TTL,
         'refresh_token' => $refresh,
         'scope'         => $scope,
-    ]);
+    ];
+    if (function_exists('oidcSignJwt')) {
+        $out['id_token'] = oidcSignJwt(oidcClaims($u, $app['client_id'], time(), ACCESS_TOKEN_TTL));
+    }
+    jsonOut($out);
+}
+
+/**
+ * GET /oauth/userinfo
+ * OIDC UserInfo 端点：Authorization: Bearer <access_token>
+ * 返回与 id_token 一致的 claims（标准 OIDC 格式）
+ */
+function oauthUserInfo(): void
+{
+    $token = bearerToken();
+    if (!$token) {
+        fail(40005, '缺少 access_token', 401);
+    }
+    $cache = redis()->get(rk('tok:' . hash('sha256', $token)));
+    if ($cache === false) {
+        fail(40005, 'access_token 无效或已过期', 401);
+    }
+    $info = json_decode((string)$cache, true);
+    $st = db()->prepare('SELECT uid, nickname, avatar, email FROM users WHERE id = ? LIMIT 1');
+    $st->execute([$info['user_id']]);
+    $u = $st->fetch();
+    if (!$u) {
+        fail(40005, '用户不存在', 401);
+    }
+    $claims = oidcClaims($u, $info['app_id'] ?? '', time(), ACCESS_TOKEN_TTL);
+    $claims['avatar'] = $u['avatar'];
+    unset($claims['aud'], $claims['exp'], $claims['iat'], $claims['auth_time']);
+    jsonOut($claims);
 }
 
 /**

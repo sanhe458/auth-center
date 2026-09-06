@@ -100,7 +100,8 @@ function ts(?string $dt): ?int
  */
 function cfg(string $key, $default = null)
 {
-    static $cache = null;
+    // 缓存放 $GLOBALS，便于 cfgClear() 主动失效（OIDC 密钥生成等场景）
+    $cache = &$GLOBALS['__ac_cfg_cache'];
     if ($cache === null) {
         $cache = [];
         // Redis 缓存优先（若 redis.php 已加载）
@@ -141,6 +142,19 @@ function cfg(string $key, $default = null)
 }
 
 /** cfg() 内部：从缓存数组取值，回退到常量/默认值 */
+/** 清空配置缓存并递增 Redis 版本号（写入 settings 后调用） */
+function cfgClear(): void
+{
+    $GLOBALS['__ac_cfg_cache'] = null;
+    try {
+        if (function_exists('redis') && function_exists('rk')) {
+            redis()->incr(rk('cfg:ver'));
+        }
+    } catch (Throwable $e) {
+        // Redis 不可用时忽略，下次读 DB 即可
+    }
+}
+
 function cfgLookup(string $key, $default, array $cache)
 {
     if (array_key_exists($key, $cache) && $cache[$key] !== null && $cache[$key] !== '') {

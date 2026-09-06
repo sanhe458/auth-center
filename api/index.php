@@ -7,6 +7,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/db.php';
 require_once __DIR__ . '/lib/redis.php';
 require_once __DIR__ . '/lib/helpers.php';
+require_once __DIR__ . '/lib/oidc.php';
 require_once __DIR__ . '/controllers/oauth.php';
 require_once __DIR__ . '/controllers/user.php';
 require_once __DIR__ . '/controllers/balance.php';
@@ -54,6 +55,16 @@ $controller = $seg[0] ?? '';
 $action     = $seg[1] ?? '';
 $method     = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
+// OIDC Discovery / JWKS（标准路径 /.well-known/...，无需登录）
+if ($controller === '.well-known') {
+    switch ($action) {
+        case 'openid-configuration': oidcDiscovery(); break;
+        case 'jwks.json':            oidcJwks(); break;
+        default: fail(40000, '未知 well-known 资源', 404);
+    }
+    exit;
+}
+
 try {
     switch ($controller) {
         // OAuth 流程
@@ -73,6 +84,7 @@ try {
                 case 'consent':   oauthConsent(); break;
                 case 'token':     oauthToken(); break;
                 case 'revoke':    oauthRevoke(); break;
+                case 'userinfo':  oauthUserInfo(); break;
                 default: fail(40000, '未知 OAuth 操作', 404);
             }
             break;
