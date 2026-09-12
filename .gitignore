@@ -32,3 +32,6 @@ android/app/release/
 
 # AJ-Captcha composer vendor（生产已部署全量，仓库只留源码）
 ajcaptcha/vendor/
+
+# 内部项目文档（含管理员邮箱/服务器路径/测试账号等，不入公开仓库）
+PROJECT.md
