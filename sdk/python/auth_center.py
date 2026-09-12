@@ -26,6 +26,8 @@ Auth Center Python SDK（依赖 requests）
     tokens = sdk.refresh_token(tokens['refresh_token'])
 """
 
+import urllib.parse
+
 import requests
 
 
@@ -56,7 +58,7 @@ class AuthCenter:
             'state': state,
         }
         return f'{self.base_url}/api/oauth/authorize?' + \
-            requests.compat.urlencode(params)
+            urllib.parse.urlencode(params)
 
     def exchange_code(self, code):
         """授权码换令牌"""

@@ -19,9 +19,47 @@ function currentUser(): ?array
     return $u ?: null;
 }
 
+/** 确保会话里存在 CSRF token（GET 时生成） */
+function csrfToken(): string
+{
+    session_start();
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/** 表单/异步请求隐藏字段（供服务端输出） */
+function csrfField(): string
+{
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrfToken(), ENT_QUOTES) . '">';
+}
+
+/**
+ * CSRF 防护：写操作（POST/PUT/DELETE）必须携带与 session 匹配的 csrf_token。
+ * 来源：表单 $ _POST['csrf_token'] 或请求头 X-CSRF-Token。
+ * 不匹配直接 403，阻断跨站请求伪造（SameSite=Lax 不挡同站 XSS 与子域）。
+ */
+function csrfGuard(): void
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if (!in_array($method, ['POST', 'PUT', 'DELETE', 'PATCH'], true)) return;
+    session_start();
+    $sent = (string)($_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    $mine = (string)($_SESSION['csrf_token'] ?? '');
+    if ($mine === '' || $sent === '' || !hash_equals($mine, $sent)) {
+        if (function_exists('securityLog')) securityLog('csrf.blocked', ['path' => $_SERVER['REQUEST_URI'] ?? '']);
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'CSRF 校验失败，请刷新页面后重试';
+        exit;
+    }
+}
+
 /** 必须登录，未登录跳登录页 */
 function requireLoginPage(): array
 {
+    csrfGuard();
     $u = currentUser();
     if (!$u) {
         header('Location: /login.php?next=' . urlencode($_SERVER['REQUEST_URI']));
@@ -33,6 +71,7 @@ function requireLoginPage(): array
 /** 必须管理员，未登录跳登录，非管理员 403 */
 function requireAdminPage(): array
 {
+    csrfGuard();
     $u = currentUser();
     if (!$u) {
         header('Location: /login.php?next=' . urlencode($_SERVER['REQUEST_URI']));
@@ -78,7 +117,10 @@ function adminSidebar(string $active): void
 /** 页面头部 */
 function pageHead(string $title, string $extraCss = ''): void
 {
+    if (function_exists('securityHeaders')) securityHeaders();
     $theme = $_COOKIE['auth_theme'] ?? 'auto';
+    // CSRF：GET 时确保 token 存在，并注入 meta，脚本自动写入所有表单与 fetch 请求
+    $csrf = csrfToken();
     $cls = $theme === 'light' ? 'mdui-theme-light' : ($theme === 'dark' ? 'mdui-theme-dark' : 'mdui-theme-auto');
     echo '<!DOCTYPE html>
 <html lang="zh-CN" class="' . $cls . '">
@@ -91,9 +133,11 @@ function pageHead(string $title, string $extraCss = ''): void
 <link rel="stylesheet" href="/css/common.css?v=1787119506">';
     if ($extraCss) echo $extraCss;
     echo '<title>' . htmlspecialchars($title) . ' · Auth Center</title>
+<meta name="csrf-token" content="' . htmlspecialchars($csrf, ENT_QUOTES) . '">
 <link rel="stylesheet" href="/lib/toast.css?v=' . (filemtime(__DIR__ . '/../../lib/toast.css') ?: 1) . '">
 <script src="/lib/theme.js?v=' . (filemtime(__DIR__ . '/../../lib/theme.js') ?: 1) . '"></script>
 <script src="/lib/toast.js?v=' . (filemtime(__DIR__ . '/../../lib/toast.js') ?: 1) . '"></script>
+<script src="/lib/csrf.js"></script>
 </head>
 <body>';
 }

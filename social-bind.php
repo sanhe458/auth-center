@@ -8,6 +8,7 @@ require_once __DIR__ . '/api/lib/helpers.php';
 require_once __DIR__ . '/api/lib/page.php';
 
 session_start();
+csrfGuard();
 $sp = $_SESSION['social_pending'] ?? null;
 if (!$sp) {
     header('Location: /login.php');

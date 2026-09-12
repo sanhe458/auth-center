@@ -29,11 +29,18 @@ function rainbowLogin(): void
         fail(45003, '不支持的登录方式', 400);
     }
 
+    // 生成 state 防 CSRF，存 session（与 github/gitee 一致）
+    session_start();
+    $state = randToken(16);
+    $_SESSION['rainbow_oauth_state'] = $state;
+    $_SESSION['rainbow_type'] = $type;
+
     $params = http_build_query([
         'act'         => 'login',
         'appid'       => cfg('rainbow_appid'),
         'appkey'      => cfg('rainbow_appkey'),
         'type'        => $type,
+        'state'       => $state,
         'redirect_uri'=> APP_BASE . '/api/oauth/rainbow/callback',
     ]);
     $resp = @file_get_contents(rainbowApi() . '?' . $params);
@@ -42,10 +49,6 @@ function rainbowLogin(): void
     if (empty($data['url'])) {
         fail(45004, '获取登录地址失败: ' . ($data['msg'] ?? '未知错误'), 502);
     }
-
-    // 存 type 到 session，回调时校验
-    session_start();
-    $_SESSION['rainbow_type'] = $type;
 
     header('Location: ' . $data['url']);
     exit;
@@ -58,6 +61,14 @@ function rainbowLogin(): void
 function rainbowCallback(): void
 {
     session_start();
+
+    // ① 校验 state（防登录 CSRF / 账号绑定劫持）
+    $state = $_GET['state'] ?? '';
+    if ($state === '' || !hash_equals((string)($_SESSION['rainbow_oauth_state'] ?? ''), (string)$state)) {
+        header('Location: ' . APP_BASE . '/login.php?error=rainbow_state');
+        exit;
+    }
+    unset($_SESSION['rainbow_oauth_state']);
 
     $type = $_GET['type'] ?? ($_SESSION['rainbow_type'] ?? '');
     $code = $_GET['code'] ?? '';

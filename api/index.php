@@ -45,6 +45,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit;
 }
 
+// CSRF：已登录会话的写接口强制校验（Bearer/客户端凭证类不受影响）
+csrfGuardApi();
+
 $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), '/');
 $seg  = array_values(array_filter(explode('/', $path)));
 

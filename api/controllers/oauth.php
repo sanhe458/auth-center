@@ -27,12 +27,13 @@ function oauthAuthorize(): void
     )))));
     $state        = param('state', '');
 
+    // 安全：client_id / redirect_uri 未通过校验前，绝不 302 到外部地址（防开放重定向）
     if ($responseType !== 'code') {
-        oauthErrorRedirect($redirectUri, 'unsupported_response_type', 'response_type 仅支持 code', $state);
+        oauthErrorRedirect('', 'unsupported_response_type', 'response_type 仅支持 code', $state);
         return;
     }
     if (!$clientId) {
-        oauthErrorRedirect($redirectUri, 'invalid_request', '缺少 client_id', $state);
+        oauthErrorRedirect('', 'invalid_request', '缺少 client_id', $state);
         return;
     }
 
@@ -40,13 +41,15 @@ function oauthAuthorize(): void
     $app->execute([$clientId]);
     $app = $app->fetch();
     if (!$app) {
-        oauthErrorRedirect($redirectUri, 'unauthorized_client', '应用不存在或未上线', $state);
+        // 应用未知 → 渲染本地错误页，不反射任何外部 redirect_uri
+        oauthErrorRedirect('', 'unauthorized_client', '应用不存在或未上线', $state);
         return;
     }
     // 回调地址必须与注册一致（支持逗号分隔多回调白名单）
     $registered = array_values(array_filter(array_map('trim', explode(',', $app['callback_url']))));
     if (!in_array($redirectUri, $registered, true)) {
-        oauthErrorRedirect($app['callback_url'], 'invalid_request', 'redirect_uri 与注册地址不一致', $state);
+        // 回跳只允许落到本应用已注册的回调；未注册的 redirect_uri 一律本地报错
+        oauthErrorRedirect('', 'invalid_request', 'redirect_uri 与注册地址不一致', $state);
         return;
     }
 
@@ -59,6 +62,7 @@ function oauthAuthorize(): void
     $requested = array_filter(array_map('trim', explode(',', $scope)));
     foreach ($requested as $s) {
         if (!in_array($s, $allowed, true)) {
+            // 此时 redirect_uri 已确认在注册白名单内，可安全回跳
             oauthErrorRedirect($redirectUri, 'invalid_scope', "权限 $s 应用未申请", $state);
             return;
         }
@@ -272,9 +276,11 @@ function oauthToken(): void
     $app->execute([$clientId]);
     $app = $app->fetch();
     if (!$app) {
+        securityLog('token.client_invalid', ['client_id' => $clientId]);
         fail(40003, 'client_id 不存在或应用已吊销', 401);
     }
     if (!hash_equals($app['client_secret_hash'], hashSecret($clientSec))) {
+        securityLog('token.secret_mismatch', ['client_id' => $clientId, 'app_id' => $app['id']]);
         fail(40004, 'client_secret 错误', 401);
     }
 
@@ -313,8 +319,12 @@ function oauthToken(): void
         if ($row['app_id'] !== $app['id']) {
             fail(40002, '刷新令牌不属于该应用', 400);
         }
+        // 重新拉取应用整行，确保 issueTokens 里 id_token 的 aud 使用 client_id（入参 app 可能字段不全）
+        $full = db()->prepare('SELECT * FROM apps WHERE id = ? LIMIT 1');
+        $full->execute([$row['app_id']]);
+        $fullApp = $full->fetch() ?: $app;
         db()->prepare('UPDATE oauth_tokens SET revoked = 1 WHERE id = ?')->execute([$row['id']]);
-        issueTokens($app, $row['user_id'], $row['scopes']);
+        issueTokens($fullApp, $row['user_id'], $row['scopes']);
     } else {
         fail(40000, '不支持的 grant_type', 400);
     }
@@ -367,18 +377,38 @@ function oauthUserInfo(): void
     if (!$token) {
         fail(40005, '缺少 access_token', 401);
     }
-    $cache = redis()->get(rk('tok:' . hash('sha256', $token)));
+    $hash = hash('sha256', $token);
+    $cache = redis()->get(rk('tok:' . $hash));
     if ($cache === false) {
-        fail(40005, 'access_token 无效或已过期', 401);
+        // Redis 未命中 → 回源数据库，避免缓存过期/被清后 userinfo 直接 401
+        $st = db()->prepare('SELECT * FROM oauth_tokens WHERE access_token_hash = ? AND revoked = 0 LIMIT 1');
+        $st->execute([$hash]);
+        $row = $st->fetch();
+        if (!$row || strtotime($row['access_expires_at']) < time()) {
+            fail(40005, 'access_token 无效或已过期', 401);
+        }
+        $info = ['user_id' => (int)$row['user_id'], 'app_id' => (int)$row['app_id'], 'scope' => $row['scopes']];
+    } else {
+        $info = json_decode((string)$cache, true);
+        if (!is_array($info)) fail(40005, 'access_token 无效或已过期', 401);
+        // 缓存命中也要校验用户/应用/授权状态（与 requireToken 一致），防退出/撤回后仍可用
+        if (function_exists('tokenStillValid') && !tokenStillValid($info)) {
+            redis()->del(rk('tok:' . $hash));
+            fail(40005, 'access_token 已失效', 401);
+        }
     }
-    $info = json_decode((string)$cache, true);
     $st = db()->prepare('SELECT uid, nickname, avatar, email FROM users WHERE id = ? LIMIT 1');
     $st->execute([$info['user_id']]);
     $u = $st->fetch();
     if (!$u) {
         fail(40005, '用户不存在', 401);
     }
-    $claims = oidcClaims($u, $info['app_id'] ?? '', time(), ACCESS_TOKEN_TTL);
+    // aud 用 client_id（查应用行），避免存入 app_id 数字导致 audience 不一致
+    $audApp = '';
+    $st = db()->prepare('SELECT client_id FROM apps WHERE id = ? LIMIT 1');
+    $st->execute([$info['app_id']]);
+    $audApp = (string)($st->fetchColumn() ?: '');
+    $claims = oidcClaims($u, $audApp, time(), ACCESS_TOKEN_TTL);
     $claims['avatar'] = $u['avatar'];
     unset($claims['aud'], $claims['exp'], $claims['iat'], $claims['auth_time']);
     jsonOut($claims);
@@ -402,10 +432,38 @@ function oauthRevoke(): void
 /** 授权失败跳回回调地址（带 error） */
 function oauthErrorRedirect(string $redirectUri, string $error, string $desc, ?string $state): void
 {
-    $sep = (strpos($redirectUri, '?') !== false) ? '&' : '?';
-    $url = $redirectUri . $sep . http_build_query([
-        'error' => $error, 'error_description' => $desc, 'state' => $state,
-    ]);
-    header('Location: ' . $url);
+    // 开放重定向防护：$redirectUri 为空时一律本地报错；非空时必须是绝对 http(s) 地址
+    // 且不含 CR/LF（防 Header 注入）。调用方只会在「已确认属于注册回调白名单」时
+    // 才传入非空值，其余错误分支一律传空串渲染本地错误页。
+    $isRemote = $redirectUri !== ''
+        && preg_match('#^https?://#i', $redirectUri)
+        && !preg_match('/[\r\n]/', $redirectUri);
+    if ($isRemote) {
+        $sep = (strpos($redirectUri, '?') !== false) ? '&' : '?';
+        $url = $redirectUri . $sep . http_build_query([
+            'error' => $error, 'error_description' => $desc, 'state' => $state,
+        ]);
+        header('Location: ' . $url);
+        exit;
+    }
+    oauthErrorPage($error, $desc);
+}
+
+/** 本地 OAuth 错误页（不回跳任何外部地址） */
+function oauthErrorPage(string $error, string $desc): void
+{
+    http_response_code(400);
+    header('Content-Type: text/html; charset=utf-8');
+    $e = htmlspecialchars($error, ENT_QUOTES);
+    $d = htmlspecialchars($desc, ENT_QUOTES);
+    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">'
+       . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+       . '<title>授权失败 · Auth Center</title>'
+       . '<style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0b0b0f;color:#e8e4ee;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}'
+       . '.card{max-width:420px;padding:28px 26px;background:#15151a;border:1px solid #26262e;border-radius:18px;text-align:center}'
+       . '.card h1{font-size:18px;margin:0 0 10px}.card p{color:#8a8595;font-size:14px;line-height:1.7;margin:0}'
+       . '.code{display:inline-block;margin-top:14px;font-size:12px;color:#ffa726;background:#241c10;border-radius:8px;padding:4px 10px}</style></head>'
+       . '<body><div class="card"><h1>授权请求无法继续</h1><p>' . $d . '</p>'
+       . '<span class="code">' . $e . '</span></div></body></html>';
     exit;
 }

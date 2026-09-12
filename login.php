@@ -30,11 +30,10 @@ $oldEmail = '';
 // POST 登录（限流：每 IP 每分钟 20 次）
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // AJ-Captcha 服务端强校验（防绕过：滑块验证通过才允许登录）
+    // 校验通过后 captcha token 立即作废（一次性），防重放
     $capOk = false;
     try {
-        $capConfig = require __DIR__ . '/ajcaptcha/src/config.php';
-        $capSvc = new \Fastknife\Service\BlockPuzzleCaptchaService($capConfig);
-        $capSvc->check($_POST['captcha_token'] ?? '', $_POST['captcha_pointJson'] ?? '');
+        captchaVerify();
         $capOk = true;
     } catch (\Throwable $e) {
         $capOk = false;
@@ -112,6 +111,7 @@ pageHead('登录', '<link rel="stylesheet" href="/lib/captcha.css?v=' . (filemti
               'github_token_failed' => 'GitHub 登录失败（获取令牌失败）',
               'github_user_failed' => 'GitHub 登录失败（获取用户信息失败）',
               'rainbow_no_code' => '第三方授权失败（缺少授权码）',
+              'rainbow_state' => '第三方登录会话已失效，请重新尝试',
               'rainbow_failed' => '第三方登录失败',
               'account_disabled' => '该账号已被禁用',
           ][$ghErr] ?? '';

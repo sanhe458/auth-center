@@ -15,7 +15,8 @@ if ($char === '') $char = '?';
 $char = htmlspecialchars($char, ENT_QUOTES, 'UTF-8');
 
 // 稳定 hash 选渐变（品牌橙 + 搭配色系）
-$h = crc32($seed);
+// 用 sha256 全量取模（CRC32 低位分布不均，8 组分段会据色）
+$h = hexdec(substr(hash('sha256', (string)$seed), 0, 8));
 $gradients = [
     ['#ffb74d', '#ff7043'], // 琥珀橙（品牌主色）
     ['#2dd4bf', '#0ea5e9'], // 青碧

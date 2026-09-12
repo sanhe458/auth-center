@@ -10,6 +10,7 @@ require_once __DIR__ . '/api/lib/helpers.php';
 require_once __DIR__ . '/api/lib/page.php';
 
 session_start();
+csrfGuard();
 $gh = $_SESSION['gh_pending'] ?? null;
 if (!$gh) {
     header('Location: /login.php');

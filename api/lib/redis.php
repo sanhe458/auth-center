@@ -35,3 +35,13 @@ function rateLimit(string $bucket, int $max, int $windowSec): bool
     }
     return $c <= $max;
 }
+
+/** 重置限流计数（登录成功等场景，失败计数清零） */
+function rateLimitReset(string $bucket): void
+{
+    try {
+        redis()->del(rk('rl:' . $bucket));
+    } catch (Throwable $e) {
+        // Redis 异常不影响主流程
+    }
+}

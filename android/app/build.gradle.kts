@@ -20,8 +20,11 @@ android {
         // 默认回调地址（自定义 scheme，需与 AuthCenter 应用注册的 callback_url 一致）
         buildConfigField("String", "DEFAULT_REDIRECT_URI", "\"authcenter://callback\"")
         // 内置官方应用凭据（AuthCenter 内置，开箱即用，无需注册）
+        // 真实 secret 不放仓库：构建时用 -PdefaultClientSecret=sk-xxx 传入，
+        // 或打包前手动在 App 设置页填写；缺省为空字符串（不内置任何密钥）。
         buildConfigField("String", "DEFAULT_CLIENT_ID", "\"authcenter_android\"")
-        buildConfigField("String", "DEFAULT_CLIENT_SECRET", "\"sk-ROTATED_REMOVED_20260912\"")
+        val acSecret = (project.findProperty("defaultClientSecret") as String?) ?: ""
+        buildConfigField("String", "DEFAULT_CLIENT_SECRET", "\"$acSecret\"")
     }
 
     buildTypes {

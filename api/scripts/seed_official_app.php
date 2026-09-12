@@ -17,8 +17,14 @@ require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/helpers.php';
 
 const OFFICIAL_CLIENT_ID  = 'authcenter_android';
-// 打包进安卓 App 的明文 secret（App 内置 client_secret，自用/内部场景可接受）
-const OFFICIAL_SECRET     = 'sk-ROTATED_REMOVED_20260912';
+// 打包进安卓 App 的明文 secret（从环境变量读取，缺省为占位值）
+// 用法：AUTHCENTER_ANDROID_SECRET='sk-xxx' php api/scripts/seed_official_app.php
+// 严禁把真实 secret 硬编码进本文件（仓库公开）
+$OFFICIAL_SECRET = getenv('AUTHCENTER_ANDROID_SECRET');
+if ($OFFICIAL_SECRET === false || $OFFICIAL_SECRET === '') {
+    fwrite(STDERR, "请通过环境变量提供 secret：AUTHCENTER_ANDROID_SECRET='sk-xxx' php api/scripts/seed_official_app.php\n");
+    exit(1);
+}
 const OFFICIAL_CALLBACK   = 'authcenter://callback';
 const OFFICIAL_SCOPES     = ['basic', 'notify'];
 
@@ -40,11 +46,11 @@ $appId = $exist->fetchColumn();
 
 if ($appId) {
     $upd = $db->prepare('UPDATE apps SET client_secret_hash = ?, owner_id = ?, name = ?, description = ?, callback_url = ?, status = 2, updated_at = NOW() WHERE id = ?');
-    $upd->execute([hashSecret(OFFICIAL_SECRET), $ownerId, 'AuthCenter 安卓客户端', '官方安卓客户端（系统内置，无需注册）', OFFICIAL_CALLBACK, $appId]);
+    $upd->execute([hashSecret($OFFICIAL_SECRET), $ownerId, 'AuthCenter 安卓客户端', '官方安卓客户端（系统内置，无需注册）', OFFICIAL_CALLBACK, $appId]);
     echo "已更新内置应用 id={$appId}\n";
 } else {
     $ins = $db->prepare('INSERT INTO apps (client_id, client_secret_hash, owner_id, name, description, callback_url, homepage, status) VALUES (?,?,?,?,?,?,?,2)');
-    $ins->execute([OFFICIAL_CLIENT_ID, hashSecret(OFFICIAL_SECRET), $ownerId, 'AuthCenter 安卓客户端', '官方安卓客户端（系统内置，无需注册）', OFFICIAL_CALLBACK, '']);
+    $ins->execute([OFFICIAL_CLIENT_ID, hashSecret($OFFICIAL_SECRET), $ownerId, 'AuthCenter 安卓客户端', '官方安卓客户端（系统内置，无需注册）', OFFICIAL_CALLBACK, '']);
     $appId = (int)$db->lastInsertId();
     echo "已创建内置应用 id={$appId}\n";
 }

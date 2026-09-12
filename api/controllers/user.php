@@ -29,11 +29,27 @@ function userRegister(): void
         fail(40010, '注册过于频繁', 429);
     }
 
+    // 行为验证码服务端强校验（与网页版一致，防注册机/撞库/邮箱枚举）
+    try {
+        captchaVerify();
+    } catch (Throwable $e) {
+        fail(41011, '请先完成滑块验证', 400);
+    }
+
     $db = db();
     $st = $db->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
     $st->execute([$email]);
     if ($st->fetch()) {
-        fail(41004, '该邮箱已注册', 409);
+        // 不暴露“邮箱已注册”以阻断枚举：统一报“注册失败，请稍后再试或直接登录”
+        securityLog('register.duplicate_email', ['email_hash' => substr(hash('sha256', $email), 0, 12)]);
+        fail(41004, '该邮箱不可用，请换一个或直接登录', 409);
+    }
+
+    // 昵称唯一性校验（防冒充）
+    $st = $db->prepare('SELECT id FROM users WHERE nickname = ? LIMIT 1');
+    $st->execute([$nickname]);
+    if ($st->fetch()) {
+        fail(41012, '该昵称已被使用，请换一个', 409);
     }
 
     $uid = genUid();
@@ -62,17 +78,32 @@ function userLogin(): void
     if (!rateLimit('login:' . clientIp(), 20, 60)) {
         fail(40010, '尝试过于频繁，请稍后再试', 429);
     }
+    // 按账号限频/锁定：同一邮箱 10 分钟内最多 10 次失败，防撞库（换 IP 也不能绕过）
+    if ($email !== '' && !rateLimit('login_acct:' . hash('sha256', $email), 10, 600)) {
+        securityLog('login.acct_locked', ['email_hash' => substr(hash('sha256', $email), 0, 12)]);
+        fail(40011, '登录尝试过多，请 10 分钟后再试', 429);
+    }
+
+    // 行为验证码服务端强校验（与网页版一致，防撞库）
+    try {
+        captchaVerify();
+    } catch (Throwable $e) {
+        fail(41011, '请先完成滑块验证', 400);
+    }
 
     $st = db()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
     $st->execute([$email]);
     $user = $st->fetch();
 
     if (!$user || !password_verify($password, $user['password_hash'])) {
+        securityLog('login.fail', ['email_hash' => substr(hash('sha256', $email), 0, 12)]);
         fail(41005, '邮箱或密码错误', 401);
     }
     if ((int)$user['status'] !== 1) {
         fail(41006, '账号已被禁用', 403);
     }
+    // 登录成功即清空账号失败计数
+    rateLimitReset('login_acct:' . hash('sha256', $email));
 
     session_start();
     session_regenerate_id(true);
@@ -93,7 +124,22 @@ function userLogin(): void
 function userLogout(): void
 {
     session_start();
+    $userId = $_SESSION['user_id'] ?? null;
     $_SESSION = [];
+    // 退出登录：连带吊销该会话对应的所有 access/refresh token（Redis 缓存 + DB）
+    if ($userId) {
+        try {
+            $st = db()->prepare('SELECT access_token_hash, refresh_token_hash FROM oauth_tokens WHERE user_id = ? AND revoked = 0');
+            $st->execute([(int)$userId]);
+            foreach ($st->fetchAll() as $r) {
+                $h = (string)$r['access_token_hash'];
+                if ($h !== '') redis()->del(rk('tok:' . $h));
+            }
+            db()->prepare('UPDATE oauth_tokens SET revoked = 1 WHERE user_id = ? AND revoked = 0')->execute([(int)$userId]);
+        } catch (Throwable $e) {
+            error_log('[auth-logout] ' . $e->getMessage());
+        }
+    }
     if (ini_get('session.use_cookies')) {
         $p = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);

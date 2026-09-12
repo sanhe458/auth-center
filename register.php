@@ -20,11 +20,10 @@ $old = ['nickname' => '', 'email' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // AJ-Captcha 服务端强校验（防注册机/撞库）
+    // 校验通过后 captcha token 立即作废（一次性），防重放
     $capOk = false;
     try {
-        $capConfig = require __DIR__ . '/ajcaptcha/src/config.php';
-        $capSvc = new \Fastknife\Service\BlockPuzzleCaptchaService($capConfig);
-        $capSvc->check($_POST['captcha_token'] ?? '', $_POST['captcha_pointJson'] ?? '');
+        captchaVerify();
         $capOk = true;
     } catch (\Throwable $e) {
         $capOk = false;

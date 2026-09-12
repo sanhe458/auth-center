@@ -138,6 +138,7 @@ function checkinStatus(): void
         if ($last) {
             $yesterday = date('Y-m-d', strtotime('-1 day'));
             if ($last['checkin_date'] === $yesterday) {
+                // 昨天的连续天数 + 1（修复：之前会把已连续天数算成下一日）
                 $streak = (int)$last['streak'] + 1;
             } else {
                 $streak = 1; // 断签重置
@@ -145,7 +146,7 @@ function checkinStatus(): void
         } else {
             $streak = 1; // 从未签到
         }
-        $nextAward = checkinReward($streak);
+        $nextAward = checkinReward($streak + 1);
     }
 
     ok([
